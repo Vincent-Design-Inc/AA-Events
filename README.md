@@ -109,11 +109,13 @@ Note: The bundled CSS is intentionally minimal. Use the override to match your t
 
 ## Screenshots
 
-A quick gallery of the key screens. The images below are placeholders you can replace. Drop your own PNG/JPG/GIF assets into `assets/screenshots/` with the same filenames to update the gallery.
+![Admin Events List](assets/screenshots/01-admin-events-list.png)
 
-| Admin Events List | Event Edit | Events Archive | Calendar Page |
-| --- | --- | --- | --- |
-| ![Admin Events List](assets/screenshots/01-admin-events-list.png) | ![Event Edit](assets/screenshots/02-event-edit-fields.png) | ![Events Archive](assets/screenshots/03-events-archive.png) | ![Calendar Page](assets/screenshots/04-calendar-template.png) |
+![Event Edit](assets/screenshots/02-event-edit-fields.png)
+
+![Events Archive](assets/screenshots/03-events-archive.png)
+
+![Calendar Page](assets/screenshots/04-calendar-template.png)
 
 ---
 
