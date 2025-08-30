@@ -109,12 +109,16 @@ Note: The bundled CSS is intentionally minimal. Use the override to match your t
 
 ## Screenshots
 
+**Admin Event List**
 ![Admin Events List](assets/screenshots/01-admin-events-list.png)
 
+**Event Edit**
 ![Event Edit](assets/screenshots/02-event-edit-fields.png)
 
+**Events Archive**
 ![Events Archive](assets/screenshots/03-events-archive.png)
 
+**Calendar Page**
 ![Calendar Page](assets/screenshots/04-calendar-template.png)
 
 ---
