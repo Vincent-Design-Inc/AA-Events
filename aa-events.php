@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       AA Events
  * Plugin URI:        https://github.com/automattic/aa-events
- * Description:       An events plugin for WordPress.
+ * Description:       An Events management plugin for WordPress, with accessible calendar (WCAG 2.2AA) and card grid views.
  * Version:           1.0.0
  * Author:            Keith Solomon
  * Author URI:        https://vincentdesign.ca
