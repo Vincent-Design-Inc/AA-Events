@@ -1,0 +1,109 @@
+/**
+ * AA Events Frontend CSS.
+ */
+
+.aa-events-calendar-wrap { margin-bottom: 1.25rem; }
+
+.aa-events-wrap {
+	margin-left: auto;
+	margin-right: auto;
+	max-width: 96rem;
+}
+
+.aa-events-calendar-header {
+	align-items: center;
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 0.625rem;
+}
+
+.aa-events-calendar-today-btn {
+	background: #aaa;
+	border-radius: 0.25rem;
+	color: #222;
+	display: inline-block;
+	font-weight: bold;
+	padding: 0.5rem 1rem;
+	text-decoration: none;
+
+	&:hover { background: #eee; }
+}
+
+.aa-events-calendar {
+	border-collapse: collapse;
+	table-layout: fixed;
+	width: 100%;
+
+	th, td {
+		border: 1px solid #aaa;
+		padding: 0.625rem;
+		text-align: left;
+		vertical-align: top;
+	}
+
+	th {
+		background-color: #f5f5f5;
+		text-align: center;
+	}
+
+	td { height: 9.375rem; }
+
+	.day-number {
+		font-weight: bold;
+		margin-bottom: 0.3125rem;
+	}
+
+	.today-cell {
+		background: #ffe9b3;
+		border: 2px solid #f7b500;
+		font-weight: bold;
+	}
+
+	.events-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+
+		li { margin-bottom: 0.3125rem; }
+	}
+}
+
+.aa-event-item .aa-event-details {
+	border-top: 1px solid #333;
+	margin-top: 1.25rem;
+	padding-top: 1.25rem;
+
+	div { margin-bottom: 0.625rem; }
+}
+
+/* Events archive layout */
+.aa-events-wrap .aa-events-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* Optional: responsive adjustments */
+@media (max-width: 1024px) {
+	.aa-events-wrap .aa-events-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 640px) {
+  .aa-events-wrap .aa-events-grid { grid-template-columns: 1fr; }
+}
+
+.aa-events-wrap .entry-header:has(.entry-thumbnail),
+.aa-events-wrap .entry-wrap:has(.entry-thumbnail) {
+	display: flex;
+	justify-content: space-between;
+
+	.entry-thumbnail {
+		margin-left: 2rem;
+		width: 100%;
+
+		img {
+			height: auto;
+			width: 100%;
+		}
+	}
+}
