@@ -115,8 +115,6 @@ A quick gallery of the key screens. The images below are placeholders you can re
 | --- | --- | --- | --- |
 | ![Admin Events List](assets/screenshots/01-admin-events-list.png) | ![Event Edit](assets/screenshots/02-event-edit-fields.png) | ![Events Archive](assets/screenshots/03-events-archive.png) | ![Calendar Page](assets/screenshots/04-calendar-template.png) |
 
-Tip: GIFs are great for showing calendar navigation (Today/Prev/Next). If you add GIFs, keep the same names but `.gif` extension and update the links here.
-
 ---
 
 ## Override Examples
