@@ -23,9 +23,9 @@ if ( ! defined( 'WPINC' ) ) {
 function activate_aa_events() {
 	// Ensure the CPT and taxonomies are registered.
 	include_once plugin_dir_path( __FILE__ ) . 'includes/post-types.php';
-	aa_events_register_post_type();
-	aa_events_register_event_type_taxonomy();
-	aa_events_register_event_tag_taxonomy();
+	events_register_post_type();
+	events_register_event_type_taxonomy();
+	events_register_event_tag_taxonomy();
 
 	// Flush rewrite rules.
 	flush_rewrite_rules();
