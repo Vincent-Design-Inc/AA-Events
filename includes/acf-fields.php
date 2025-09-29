@@ -137,7 +137,7 @@ function events_register_acf_fields() {
 					),
 				),
 				'menu_order'            => 0,
-				'position'              => 'normal',
+				'position'              => 'side',
 				'style'                 => 'default',
 				'label_placement'       => 'top',
 				'instruction_placement' => 'label',
