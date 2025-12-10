@@ -91,9 +91,55 @@ if ( $next_month > 12 ) {
 $days_in_month = cal_days_in_month( CAL_GREGORIAN, $curMonth, $curYear );
 
 // Get the first day of the month in site timezone.
-$tz        = wp_timezone();
-$first_ts  = ( new DateTimeImmutable( sprintf( '%04d-%02d-01 00:00:00', $curYear, $curMonth ), $tz ) )->getTimestamp();
-$first_day = (int) wp_date( 'N', $first_ts );
+$tz       = wp_timezone();
+$first_ts = ( new DateTimeImmutable( sprintf( '%04d-%02d-01 00:00:00', $curYear, $curMonth ), $tz ) )->getTimestamp();
+
+// Respect the site's chosen week start (0 = Sunday, 6 = Saturday).
+$start_of_week = (int) get_option( 'start_of_week', 1 );
+if ( $start_of_week < 0 || $start_of_week > 6 ) {
+	$start_of_week = 0;
+}
+
+// Calculate how many empty cells to prepend before day 1 based on the start day.
+$first_weekday_of_month = (int) wp_date( 'w', $first_ts ); // 0 (Sun) - 6 (Sat).
+$leading_empty_cells    = ( $first_weekday_of_month - $start_of_week + 7 ) % 7;
+
+// Build weekday labels in the configured order.
+$weekdays = array(
+	array(
+		'abbr'  => __( 'Sun', 'aa-events' ),
+		'label' => __( 'Sunday', 'aa-events' ),
+	),
+	array(
+		'abbr'  => __( 'Mon', 'aa-events' ),
+		'label' => __( 'Monday', 'aa-events' ),
+	),
+	array(
+		'abbr'  => __( 'Tue', 'aa-events' ),
+		'label' => __( 'Tuesday', 'aa-events' ),
+	),
+	array(
+		'abbr'  => __( 'Wed', 'aa-events' ),
+		'label' => __( 'Wednesday', 'aa-events' ),
+	),
+	array(
+		'abbr'  => __( 'Thu', 'aa-events' ),
+		'label' => __( 'Thursday', 'aa-events' ),
+	),
+	array(
+		'abbr'  => __( 'Fri', 'aa-events' ),
+		'label' => __( 'Friday', 'aa-events' ),
+	),
+	array(
+		'abbr'  => __( 'Sat', 'aa-events' ),
+		'label' => __( 'Saturday', 'aa-events' ),
+	),
+);
+
+$ordered_weekdays = array_merge(
+	array_slice( $weekdays, $start_of_week ),
+	array_slice( $weekdays, 0, $start_of_week )
+);
 
 // Get events for the current month.
 $events = new WP_Query(
@@ -156,10 +202,10 @@ $originalEchoDayCell = function ( $day, $firstDay, $eventsByDay ) use ( $isToday
 // Overwrite the default day cell output in the table loop.
 ob_start();
 for ( $day = 1; $day <= $days_in_month; $day++ ) {
-    if ( ( $day + $first_day - 2 ) % 7 === 0 && $day > 1 ) {
+    if ( ( ( $day + $leading_empty_cells - 1 ) % 7 ) === 0 && $day > 1 ) {
         echo '</tr><tr>';
     }
-    $originalEchoDayCell( $day, $first_day, $events_by_day );
+    $originalEchoDayCell( $day, $leading_empty_cells, $events_by_day );
 }
 $calendarRows = ob_get_clean();
 
@@ -203,26 +249,22 @@ $calendarOutput = preg_replace(
         <caption id="calendar-heading" class="screen-reader-text"><?php echo esc_html( gmdate( 'F Y', strtotime( "$curYear-$curMonth-01" ) ) ); ?> <?php esc_html_e( 'Events Calendar', 'aa-events' ); ?></caption>
         <thead>
             <tr>
-                <th scope="col" abbr="<?php esc_attr_e( 'Mon', 'aa-events' ); ?>"><?php esc_html_e( 'Monday', 'aa-events' ); ?></th>
-                <th scope="col" abbr="<?php esc_attr_e( 'Tue', 'aa-events' ); ?>"><?php esc_html_e( 'Tuesday', 'aa-events' ); ?></th>
-                <th scope="col" abbr="<?php esc_attr_e( 'Wed', 'aa-events' ); ?>"><?php esc_html_e( 'Wednesday', 'aa-events' ); ?></th>
-                <th scope="col" abbr="<?php esc_attr_e( 'Thu', 'aa-events' ); ?>"><?php esc_html_e( 'Thursday', 'aa-events' ); ?></th>
-                <th scope="col" abbr="<?php esc_attr_e( 'Fri', 'aa-events' ); ?>"><?php esc_html_e( 'Friday', 'aa-events' ); ?></th>
-                <th scope="col" abbr="<?php esc_attr_e( 'Sat', 'aa-events' ); ?>"><?php esc_html_e( 'Saturday', 'aa-events' ); ?></th>
-                <th scope="col" abbr="<?php esc_attr_e( 'Sun', 'aa-events' ); ?>"><?php esc_html_e( 'Sunday', 'aa-events' ); ?></th>
+				<?php foreach ( $ordered_weekdays as $weekday ) : ?>
+					<th scope="col" abbr="<?php echo esc_attr( $weekday['abbr'] ); ?>"><?php echo esc_html( $weekday['label'] ); ?></th>
+				<?php endforeach; ?>
             </tr>
         </thead>
         <tbody>
             <tr>
                 <?php
                 // Add empty cells for the first week.
-                for ( $i = 1; $i < $first_day; $i++ ) {
+                for ( $i = 0; $i < $leading_empty_cells; $i++ ) {
                     echo '<td role="gridcell" class="empty-cell"></td>';
                 }
 
                 // Loop through the days of the month.
                 for ( $day = 1; $day <= $days_in_month; $day++ ) {
-                    if ( ( $day + $first_day - 2 ) % 7 === 0 && $day > 1 ) {
+                    if ( ( ( $day + $leading_empty_cells - 1 ) % 7 ) === 0 && $day > 1 ) {
                         echo '</tr><tr>';
                     }
 
@@ -250,7 +292,7 @@ $calendarOutput = preg_replace(
                 }
 
                 // Add empty cells for the last week.
-                $remaining_days = 7 - ( ( $days_in_month + $first_day - 1 ) % 7 );
+                $remaining_days = ( 7 - ( ( $days_in_month + $leading_empty_cells ) % 7 ) ) % 7;
 
                 if ( $remaining_days < 7 ) {
                     for ( $i = 0; $i < $remaining_days; $i++ ) {
