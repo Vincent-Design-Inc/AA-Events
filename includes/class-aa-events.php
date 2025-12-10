@@ -63,6 +63,7 @@ final class AA_Events {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_styles' ) );
 		// Ensure the active theme supports thumbnails for the event post type.
 		add_action( 'after_setup_theme', array( $this, 'ensure_post_thumbnails_support' ) );
+		add_filter( 'query_vars', array( $this, 'register_calendar_query_vars' ) );
 	}
 
 	/**
@@ -124,5 +125,18 @@ final class AA_Events {
 			}
 		}
 		// If theme support is boolean true (all types), nothing to do.
+	}
+
+	/**
+	 * Allow custom AA Events calendar query vars to persist through canonical redirects.
+	 *
+	 * @param array $vars Public query vars.
+	 * @return array
+	 */
+	public function register_calendar_query_vars( $vars ) {
+		$vars[] = 'aa_month';
+		$vars[] = 'aa_year';
+
+		return $vars;
 	}
 }

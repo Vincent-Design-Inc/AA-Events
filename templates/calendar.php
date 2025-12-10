@@ -9,32 +9,65 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly.
 }
 
+// Use custom query vars (avoid WP date archive/canonical behavior on `year`)
+$month_param = 'aa_month';
+$year_param  = 'aa_year';
+
 // Get current month and year (read-only query vars; validate instead of nonce)
 $month_input = filter_input(
-    INPUT_GET,
-    'month',
-    FILTER_VALIDATE_INT,
-    array(
-        'options' => array(
-            'min_range' => 1,
-            'max_range' => 12,
-        ),
-    )
+	INPUT_GET,
+	$month_param,
+	FILTER_VALIDATE_INT,
+	array(
+		'options' => array(
+			'min_range' => 1,
+			'max_range' => 12,
+		),
+	)
 );
+
+// Back-compat for legacy `month` query arg if present.
+if ( false === $month_input || null === $month_input ) {
+	$month_input = filter_input(
+		INPUT_GET,
+		'month',
+		FILTER_VALIDATE_INT,
+		array(
+			'options' => array(
+				'min_range' => 1,
+				'max_range' => 12,
+			),
+		)
+	);
+}
 
 $year_input = filter_input(
-    INPUT_GET,
-    'year',
-    FILTER_VALIDATE_INT,
-    array(
-        'options' => array(
-            // Choose a sane range for years.
-            'min_range' => 1970,
-            'max_range' => 2200,
-        ),
-    )
+	INPUT_GET,
+	$year_param,
+	FILTER_VALIDATE_INT,
+	array(
+		'options' => array(
+			// Choose a sane range for years.
+			'min_range' => 1970,
+			'max_range' => 2200,
+		),
+	)
 );
 
+// Back-compat for legacy `year` query arg if present.
+if ( false === $year_input || null === $year_input ) {
+	$year_input = filter_input(
+		INPUT_GET,
+		'year',
+		FILTER_VALIDATE_INT,
+		array(
+			'options' => array(
+				'min_range' => 1970,
+				'max_range' => 2200,
+			),
+		)
+	);
+}
 $curMonth = ( false !== $month_input && null !== $month_input ) ? (int) $month_input : (int) wp_date( 'n' );
 $curYear  = ( false !== $year_input && null !== $year_input ) ? (int) $year_input : (int) wp_date( 'Y' );
 
@@ -139,11 +172,11 @@ $calendarOutput = preg_replace(
 ?>
 
 <div class="aa-events-calendar-wrap container">
-    <div class="aa-events-calendar-today-link" style="margin-bottom: 1em;">
-        <a href="?month=<?php echo esc_attr( $todayMonth ); ?>&year=<?php echo esc_attr( $todayYear ); ?>" class="aa-events-calendar-today-btn">
-        <?php esc_html_e( 'Today', 'aa-events' ); ?>
-        </a>
-    </div>
+	<div class="aa-events-calendar-today-link" style="margin-bottom: 1em;">
+		<a href="?aa_month=<?php echo esc_attr( $todayMonth ); ?>&aa_year=<?php echo esc_attr( $todayYear ); ?>" class="aa-events-calendar-today-btn">
+		<?php esc_html_e( 'Today', 'aa-events' ); ?>
+		</a>
+	</div>
 
     <div class="aa-events-calendar-header">
         <?php
@@ -154,16 +187,16 @@ $calendarOutput = preg_replace(
         $nextMonthName = wp_date( 'F', $next_ts );
         ?>
         <a
-        href="?month=<?php echo esc_attr( $prev_month ); ?>&year=<?php echo esc_attr( $prev_year ); ?>"
-        aria-label="<?php echo esc_attr( "Go to $prevMonthName $prev_year" ); ?>"
-        >&laquo; <?php esc_html_e( 'Previous Month', 'aa-events' ); ?></a>
+		href="?aa_month=<?php echo esc_attr( $prev_month ); ?>&aa_year=<?php echo esc_attr( $prev_year ); ?>"
+		aria-label="<?php echo esc_attr( "Go to $prevMonthName $prev_year" ); ?>"
+		>&laquo; <?php esc_html_e( 'Previous Month', 'aa-events' ); ?></a>
 
-            <h2><?php echo esc_html( wp_date( 'F Y', $first_ts ) ); ?></h2>
+			<h2><?php echo esc_html( wp_date( 'F Y', $first_ts ) ); ?></h2>
 
-        <a
-        href="?month=<?php echo esc_attr( $next_month ); ?>&year=<?php echo esc_attr( $next_year ); ?>"
-        aria-label="<?php echo esc_attr( "Go to $nextMonthName $next_year" ); ?>"
-        ><?php esc_html_e( 'Next Month', 'aa-events' ); ?> &raquo;</a>
+		<a
+		href="?aa_month=<?php echo esc_attr( $next_month ); ?>&aa_year=<?php echo esc_attr( $next_year ); ?>"
+		aria-label="<?php echo esc_attr( "Go to $nextMonthName $next_year" ); ?>"
+		><?php esc_html_e( 'Next Month', 'aa-events' ); ?> &raquo;</a>
     </div>
 
     <table class="aa-events-calendar" role="grid" aria-labelledby="calendar-heading">

@@ -64,7 +64,7 @@ An approachable, theme‑friendly events plugin for WordPress. It adds an `Event
 - Archive: `/events` uses `templates/archive-event.php`.
 - Single: each event uses `templates/single-event.php`.
 - Calendar page: Page → Template → “Events Calendar” renders `templates/template-calendar.php` which includes `templates/calendar.php`.
-- Calendar navigation: query args `?month=MM&year=YYYY` change the visible month; “Today” jumps back to the current month.
+ - Calendar navigation: query args `?aa_month=MM&aa_year=YYYY` change the visible month; “Today” jumps back to the current month. (`month`/`year` still work for legacy links.)
 
 ---
 
