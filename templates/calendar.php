@@ -103,7 +103,7 @@ $isTodayInCurrentMonth = ( $curMonth === $todayMonth && $curYear === $todayYear 
 
 <?php
 // Modify the day cell output to add highlight for today.
-$originalEchoDayCell = function ( $day, $firstDay, $eventsByDay ) use ( $isTodayInCurrentMonth, $todayDay ) {
+$originalEchoDayCell = function ( $day, $firstDay, $eventsByDay ) use ( $isTodayInCurrentMonth, $todayDay, $todayMonth, $todayYear, $curMonth, $curYear ) {
     $cellClass = '';
     if ( $day === $todayDay && $curMonth === $todayMonth && $curYear === $todayYear ) {
         $cellClass = 'today-cell';
