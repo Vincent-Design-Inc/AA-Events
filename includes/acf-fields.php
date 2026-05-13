@@ -10,9 +10,47 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * Check whether an ACF field group created in the admin targets the event post type.
+ *
+ * @return bool True if an external field group is assigned to events.
+ */
+function events_has_admin_field_group() {
+	if ( ! function_exists( 'acf_get_field_groups' ) ) {
+		return false;
+	}
+
+	$groups = acf_get_field_groups( array( 'post_type' => 'event' ) );
+
+	foreach ( $groups as $group ) {
+		if ( isset( $group['active'] ) && ! $group['active'] ) {
+			continue;
+		}
+
+		if (
+			isset( $group['key'], $group['local'] )
+			&& 'group_61b0c5f5a3e7e' === $group['key']
+			&& 'php' === $group['local']
+		) {
+			continue;
+		}
+
+		return true;
+	}
+
+	return false;
+}
+
+/**
  * Register the ACF field group.
+ *
+ * Skips registration when an admin-created field group is already
+ * assigned to the event post type, allowing full editorial control.
  */
 function events_register_acf_fields() {
+	if ( events_has_admin_field_group() ) {
+		return;
+	}
+
 	if ( function_exists( 'acf_add_local_field_group' ) ) :
 
 		acf_add_local_field_group(
