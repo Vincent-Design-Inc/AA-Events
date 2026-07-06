@@ -30,21 +30,20 @@ get_header(); ?>
 
 					<footer class="entry-footer">
 						<div class="aa-event-details">
+							<?php $occurrences = aa_events_get_occurrences( get_the_ID() ); ?>
+							<?php if ( $occurrences ) : ?>
 							<div class="aa-event-date">
-								<strong><?php esc_html_e( 'Date:', 'aa-events' ); ?></strong>
+								<strong><?php echo esc_html( 1 === count( $occurrences ) ? __( 'Date:', 'aa-events' ) : __( 'Dates:', 'aa-events' ) ); ?></strong>
 								<?php
-								$event_raw = get_field( 'event_datetime' );
-								if ( $event_raw ) {
-									$tz       = wp_timezone();
-									$ts       = ( new DateTimeImmutable( $event_raw, $tz ) )->getTimestamp();
-									$human    = wp_date( 'F j, Y, g:i A', $ts );
-									$iso_attr = wp_date( 'c', $ts );
-									?>
-									<time datetime="<?php echo esc_attr( $iso_attr ); ?>"><?php echo esc_html( $human ); ?></time>
-									<?php
+									echo '<span class="aa-event-multiple-dates">';
+								foreach ( $occurrences as $index => $occurrence ) {
+									echo aa_events_occurrence_time_markup( $occurrence ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Helper returns escaped markup.
+									echo ( $index < count( $occurrences ) - 1 ) ? '<br />' : '';
 								}
+									echo '</span>';
 								?>
 							</div>
+							<?php endif; ?>
 
                             <?php if ( get_field( 'event_cost' ) ) { ?>
                                 <div class="aa-event-cost">

@@ -146,10 +146,15 @@ add_filter( 'manage_edit-event_columns', 'events_add_admin_columns' );
  */
 function events_display_admin_column_content( $column, $post_id ) {
     if ( 'event_datetime' === $column ) {
-        $datetime = get_field( 'event_datetime', $post_id );
+        $occurrences = aa_events_get_occurrences( $post_id );
+        if ( ! $occurrences ) {
+            echo esc_html( '—' );
+            return;
+        }
 
-        if ( $datetime ) {
-            echo esc_html( gmdate( 'F j, Y g:i a', strtotime( $datetime ) ) );
+        echo esc_html( aa_events_format_occurrence( $occurrences[0] ) );
+        if ( count( $occurrences ) > 1 ) {
+            echo ' <span class="aa-event-occurrence-count">+' . esc_html( count( $occurrences ) - 1 ) . '</span>';
         }
     }
 }
@@ -193,12 +198,26 @@ function events_get_sortable_meta_map() {
  * @param WP_Query $query The WordPress query object.
  */
 function events_sort_by_custom_column( $query ) {
-    if ( ! is_admin() || ! $query->is_main_query() ) {
+    if ( ! is_admin() || ! $query->is_main_query() || 'event' !== $query->get( 'post_type' ) ) {
         return;
     }
 
     $orderby = $query->get( 'orderby' );
     $map     = events_get_sortable_meta_map();
+
+    // Special handling for the event_datetime column in admin.
+    // Use a custom SQL sort across multiple possible date fields while keeping all posts visible.
+    if ( 'event_datetime' === $orderby ) {
+        $query->set( 'aa_events_date_sort', 1 );
+        $query->set( 'orderby', 'none' );
+
+        $order = strtoupper( (string) $query->get( 'order' ) );
+        if ( 'DESC' !== $order ) {
+            $order = 'ASC';
+        }
+        $query->set( 'order', $order );
+        return;
+    }
 
     if ( isset( $map[ $orderby ] ) ) {
         $meta_type = strtoupper( $map[ $orderby ] );
@@ -212,6 +231,115 @@ function events_sort_by_custom_column( $query ) {
     }
 }
 add_action( 'pre_get_posts', 'events_sort_by_custom_column' );
+
+/**
+ * Build a safe SQL expression for supported stored date formats.
+ *
+ * @param string $column         Static SQL column expression.
+ * @param bool   $allow_datetime Whether to accept a full legacy datetime.
+ * @return string
+ */
+function events_admin_date_meta_expression( $column, $allow_datetime = false ) {
+    $datetime = $allow_datetime ? "WHEN {$column} REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$' THEN STR_TO_DATE({$column}, '%Y-%m-%d %H:%i:%s') " : '';
+    return "CASE {$datetime}WHEN {$column} REGEXP '^[0-9]{8}$' THEN STR_TO_DATE({$column}, '%Y%m%d') WHEN {$column} REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' THEN STR_TO_DATE({$column}, '%Y-%m-%d') ELSE NULL END";
+}
+
+/**
+ * Build the deterministic admin occurrence ORDER BY expression.
+ *
+ * @param string $posts_table Static posts table name.
+ * @param string $order       Requested direction.
+ * @return string
+ */
+function events_admin_date_sort_orderby_sql( $posts_table, $order ) {
+    $order                 = 'DESC' === strtoupper( (string) $order ) ? 'DESC' : 'ASC';
+    $postmeta_table        = events_date_sort_postmeta_table();
+    $canonical_expression  = events_admin_date_meta_expression( 'aa_sort.meta_value', true );
+    $date_expression       = events_admin_date_meta_expression( 'aa_er.meta_value' );
+    $datetime_expression   = events_admin_date_meta_expression( 'aa_edt.meta_value', true );
+    $legacy_expression     = events_admin_date_meta_expression( 'aa_d.meta_value' );
+    $start_time_value      = "(SELECT aa_time.meta_value FROM {$postmeta_table} AS aa_time WHERE aa_time.post_id = aa_er.post_id AND aa_time.meta_key = CONCAT(LEFT(aa_er.meta_key, LENGTH(aa_er.meta_key) - 4), 'start_time') ORDER BY aa_time.meta_id ASC LIMIT 1)";
+    $all_day_value         = "(SELECT aa_all_day.meta_value FROM {$postmeta_table} AS aa_all_day WHERE aa_all_day.post_id = aa_er.post_id AND aa_all_day.meta_key = CONCAT(LEFT(aa_er.meta_key, LENGTH(aa_er.meta_key) - 4), 'all_day') ORDER BY aa_all_day.meta_id ASC LIMIT 1)";
+    $start_time_expression = "CASE WHEN LOWER(TRIM(COALESCE({$all_day_value}, ''))) IN ('1', 'true', 'yes', 'on') THEN STR_TO_DATE('00:00:00', '%H:%i:%s') WHEN {$start_time_value} REGEXP '^([01][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$' THEN CASE WHEN CHAR_LENGTH({$start_time_value}) = 5 THEN STR_TO_DATE({$start_time_value}, '%H:%i') ELSE STR_TO_DATE({$start_time_value}, '%H:%i:%s') END ELSE STR_TO_DATE('00:00:00', '%H:%i:%s') END";
+    $repeater              = "(SELECT MIN(TIMESTAMP({$date_expression}, {$start_time_expression})) FROM {$postmeta_table} AS aa_er WHERE aa_er.post_id = {$posts_table}.ID AND aa_er.meta_key REGEXP '^event_dates_[0-9]+_date$')";
+    $legacy_datetime       = "(SELECT MIN({$datetime_expression}) FROM {$postmeta_table} AS aa_edt WHERE aa_edt.post_id = {$posts_table}.ID AND aa_edt.meta_key = 'event_datetime')";
+    $legacy_date           = "(SELECT MIN({$legacy_expression}) FROM {$postmeta_table} AS aa_d WHERE aa_d.post_id = {$posts_table}.ID AND aa_d.meta_key = 'date')";
+    return "COALESCE({$canonical_expression}, {$repeater}, {$legacy_datetime}, {$legacy_date}, {$posts_table}.post_date) {$order}, {$posts_table}.post_date {$order}, {$posts_table}.ID {$order}";
+}
+
+/**
+ * Return the postmeta table used by date-sort SQL helpers.
+ *
+ * @return string
+ */
+function events_date_sort_postmeta_table() {
+    global $wpdb;
+    return isset( $wpdb->postmeta ) ? $wpdb->postmeta : 'wp_postmeta';
+}
+
+/**
+ * Build grouped joins for normalized event date sort values.
+ *
+ * @param string $postmeta_table Static postmeta table name.
+ * @param string $posts_table    Static posts table name.
+ * @return string
+ */
+function events_admin_date_sort_join_sql( $postmeta_table, $posts_table ) {
+    return " LEFT JOIN {$postmeta_table} AS aa_sort ON aa_sort.meta_id = (SELECT MIN(aa_sort_pick.meta_id) FROM {$postmeta_table} AS aa_sort_pick WHERE aa_sort_pick.post_id = {$posts_table}.ID AND aa_sort_pick.meta_key = '_aa_events_sort_start')";
+}
+
+/**
+ * Check whether an occurrence sort flag belongs to a supported event query.
+ *
+ * @param WP_Query $query Query object.
+ * @return bool
+ */
+function events_date_sort_query_applies( $query ) {
+    if ( ! $query->is_main_query() || ! $query->get( 'aa_events_date_sort' ) ) {
+        return false;
+    }
+    if ( is_admin() ) {
+        return 'event' === $query->get( 'post_type' );
+    }
+    return $query->is_post_type_archive( 'event' ) || $query->is_tax( 'event_type' ) || $query->is_tax( 'event_tag' );
+}
+
+/**
+ * Add occurrence date sort joins to a flagged main query.
+ *
+ * @param string   $join  SQL JOIN clause.
+ * @param WP_Query $query Query object.
+ * @return string
+ */
+function events_date_sort_posts_join( $join, $query ) {
+    global $wpdb;
+
+    if ( ! events_date_sort_query_applies( $query ) ) {
+        return $join;
+    }
+
+    return $join . events_admin_date_sort_join_sql( $wpdb->postmeta, $wpdb->posts );
+}
+add_filter( 'posts_join', 'events_date_sort_posts_join', 10, 2 );
+
+/**
+ * Apply deterministic occurrence date ordering to a flagged main query.
+ *
+ * @param string   $orderby SQL ORDER BY clause.
+ * @param WP_Query $query   Query object.
+ * @return string
+ */
+function events_date_sort_posts_orderby( $orderby, $query ) {
+    global $wpdb;
+
+    if ( ! events_date_sort_query_applies( $query ) ) {
+        return $orderby;
+    }
+
+    // Priority: earliest repeater date -> legacy datetime -> legacy date -> post date.
+    return events_admin_date_sort_orderby_sql( $wpdb->posts, $query->get( 'order' ) );
+}
+add_filter( 'posts_orderby', 'events_date_sort_posts_orderby', 10, 2 );
 
 /**
  * Extend REST API to allow ordering events by meta value.
@@ -287,8 +415,7 @@ function events_rest_adjust_query_for_meta_ordering( $args, $request ) {
 add_filter( 'rest_event_query', 'events_rest_adjust_query_for_meta_ordering', 10, 2 );
 
 /**
- * Set default sort order for event post type by event_datetime ascending.
- * Applies to both admin and frontend queries.
+ * Set occurrence-aware default sort order for event list queries.
  *
  * @param WP_Query $query The WordPress query object.
  */
@@ -298,17 +425,19 @@ function events_set_default_sort_order( $query ) {
         return;
     }
 
-    // Admin list table
+    // Admin list table: default to event start-date sorting.
     if ( is_admin() && $query->get( 'post_type' ) === 'event' ) {
         if ( ! $query->get( 'orderby' ) ) {
-            $query->set( 'meta_key', 'event_datetime' );
-            $query->set( 'orderby', 'meta_value' );
+            $query->set( 'aa_events_date_sort', 1 );
+            $query->set( 'orderby', 'none' );
             $query->set( 'order', 'ASC' );
         }
     }
 
-    // Frontend: event archives and taxonomies
-    if ( ! is_admin() && $query->get( 'post_type' ) === 'event' ) {
+    // Frontend: event archives and taxonomies. Taxonomy queries do not always expose post_type.
+    $is_event_archive  = ! is_admin() && $query->is_post_type_archive( 'event' );
+    $is_event_taxonomy = ! is_admin() && ( $query->is_tax( 'event_type' ) || $query->is_tax( 'event_tag' ) );
+    if ( $is_event_archive || $is_event_taxonomy ) {
         $map     = events_get_sortable_meta_map();
         $orderby = $query->get( 'orderby' );
 
@@ -326,20 +455,18 @@ function events_set_default_sort_order( $query ) {
         }
 
         // Main event archive: newest first (descending by date/time)
-        if ( $query->is_post_type_archive( 'event' ) ) {
+        if ( $is_event_archive ) {
             if ( ! $query->get( 'orderby' ) ) {
-                $query->set( 'meta_key', 'event_datetime' );
-                $query->set( 'meta_type', 'DATETIME' );
-                $query->set( 'orderby', 'meta_value' );
+                $query->set( 'aa_events_date_sort', 1 );
+                $query->set( 'orderby', 'none' );
                 $query->set( 'order', 'DESC' );
             }
         }
 
         // Taxonomy views: upcoming first (ascending)
-        if ( ( $query->is_tax( 'event_type' ) || $query->is_tax( 'event_tag' ) ) && ! $query->get( 'orderby' ) ) {
-            $query->set( 'meta_key', 'event_datetime' );
-            $query->set( 'meta_type', 'DATETIME' );
-            $query->set( 'orderby', 'meta_value' );
+        if ( $is_event_taxonomy && ! $query->get( 'orderby' ) ) {
+            $query->set( 'aa_events_date_sort', 1 );
+            $query->set( 'orderby', 'none' );
             $query->set( 'order', 'ASC' );
         }
     }

@@ -3,6 +3,14 @@
     "tree.indentGuidesStroke": "#3d92ec",
     "activityBar.background": "#123509",
     "titleBar.activeBackground": "#1A4A0D",
-    "titleBar.activeForeground": "#F5FDF3"
+    "titleBar.activeForeground": "#F5FDF3",
+    "titleBar.inactiveBackground": "#123509",
+    "titleBar.inactiveForeground": "#F5FDF3",
+    "statusBar.background": "#123509",
+    "statusBar.foreground": "#F5FDF3",
+    "statusBar.debuggingBackground": "#123509",
+    "statusBar.debuggingForeground": "#F5FDF3",
+    "statusBar.noFolderBackground": "#123509",
+    "statusBar.noFolderForeground": "#F5FDF3"
   }
 }

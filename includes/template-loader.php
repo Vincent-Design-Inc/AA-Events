@@ -10,6 +10,23 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * Build safe contact-email markup for event templates.
+ *
+ * @param mixed $value Raw contact email value.
+ * @return string Escaped mailto anchor, or an empty string for invalid input.
+ */
+function aa_events_contact_email_markup( $value ) {
+	$raw   = trim( (string) $value );
+	$email = sanitize_email( $raw );
+	if ( '' === $email || $email !== $raw ) {
+		return '';
+	}
+
+	$protected = antispambot( $email );
+	return '<a href="' . esc_attr( 'mailto:' . $protected ) . '">' . wp_kses_post( $protected ) . '</a>';
+}
+
+/**
  * Load a template.
  *
  * Handles template usage so that users can override the plugin's templates by using the theme.

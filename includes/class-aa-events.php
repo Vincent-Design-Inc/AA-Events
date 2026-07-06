@@ -50,6 +50,8 @@ final class AA_Events {
 	 * Include required core files.
 	 */
 	public function includes() {
+		include_once AA_EVENTS_PLUGIN_DIR . 'includes/occurrences.php';
+		include_once AA_EVENTS_PLUGIN_DIR . 'includes/calendar-layout.php';
 		include_once AA_EVENTS_PLUGIN_DIR . 'includes/post-types.php';
 		include_once AA_EVENTS_PLUGIN_DIR . 'includes/acf-fields.php';
 		include_once AA_EVENTS_PLUGIN_DIR . 'includes/template-loader.php';
@@ -61,8 +63,10 @@ final class AA_Events {
 	private function init_hooks() {
 		add_action( 'init', array( $this, 'load_plugin_textdomain' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_styles' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 		// Ensure the active theme supports thumbnails for the event post type.
 		add_action( 'after_setup_theme', array( $this, 'ensure_post_thumbnails_support' ) );
+		add_filter( 'query_vars', array( $this, 'register_calendar_query_vars' ) );
 	}
 
 	/**
@@ -86,6 +90,31 @@ final class AA_Events {
 				AA_EVENTS_VERSION
 			);
 		}
+	}
+
+	/**
+	 * Enqueue admin assets for event editor UX fixes.
+	 *
+	 * @param string $hook_suffix Current admin page hook.
+	 * @return void
+	 */
+	public function enqueue_admin_assets( $hook_suffix ) {
+		if ( 'post.php' !== $hook_suffix && 'post-new.php' !== $hook_suffix ) {
+			return;
+		}
+
+		$screen = get_current_screen();
+		if ( ! $screen || 'event' !== $screen->post_type ) {
+			return;
+		}
+
+		wp_enqueue_script(
+			'aa-events-admin',
+			AA_EVENTS_PLUGIN_URL . 'assets/js/aa-events-admin.js',
+			array( 'jquery' ),
+			AA_EVENTS_VERSION,
+			true
+		);
 	}
 
 	/**
@@ -124,5 +153,18 @@ final class AA_Events {
 			}
 		}
 		// If theme support is boolean true (all types), nothing to do.
+	}
+
+	/**
+	 * Allow custom AA Events calendar query vars to persist through canonical redirects.
+	 *
+	 * @param array $vars Public query vars.
+	 * @return array
+	 */
+	public function register_calendar_query_vars( $vars ) {
+		$vars[] = 'aa_month';
+		$vars[] = 'aa_year';
+
+		return $vars;
 	}
 }

@@ -35,21 +35,19 @@ get_header(); ?>
 
                     <footer class="entry-footer">
                         <div class="aa-event-details">
+                            <?php $occurrences = aa_events_get_occurrences( get_the_ID() ); ?>
+                            <?php if ( $occurrences ) : ?>
                             <div class="aa-event-date">
-                                <strong><?php esc_html_e( 'Date:', 'aa-events' ); ?></strong>
+                                <strong><?php echo esc_html( 1 === count( $occurrences ) ? __( 'Date:', 'aa-events' ) : __( 'Dates:', 'aa-events' ) ); ?></strong>
                                 <?php
-                                $event_raw = get_field( 'event_datetime' );
-                                if ( $event_raw ) {
-                                    $tz       = wp_timezone();
-                                    $ts       = ( new DateTimeImmutable( $event_raw, $tz ) )->getTimestamp();
-                                    $human    = wp_date( 'F j, Y, g:i A', $ts );
-                                    $iso_attr = wp_date( 'c', $ts );
-                                    ?>
-                                    <time datetime="<?php echo esc_attr( $iso_attr ); ?>"><?php echo esc_html( $human ); ?></time>
-                                    <?php
+
+                                foreach ( $occurrences as $index => $occurrence ) {
+									echo aa_events_occurrence_time_markup( $occurrence ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Helper returns escaped markup.
+									echo ( $index < count( $occurrences ) - 1 ) ? '<br />' : '';
                                 }
                                 ?>
                             </div>
+                            <?php endif; ?>
 
                             <?php if ( get_field( 'event_cost' ) ) { ?>
                                 <div class="aa-event-cost">
@@ -72,6 +70,14 @@ get_header(); ?>
                                 }
                                 ?>
                             </div>
+
+							<?php $contact_email_markup = aa_events_contact_email_markup( get_field( 'event_contact_email' ) ); ?>
+							<?php if ( $contact_email_markup ) : ?>
+							<div class="aa-event-contact-email">
+								<strong><?php echo esc_html( __( 'Contact Email:', 'aa-events' ) ); ?></strong>
+								<?php echo wp_kses_post( $contact_email_markup ); ?>
+							</div>
+							<?php endif; ?>
 
                             <?php if ( get_the_terms( get_the_ID(), 'event_type' ) ) { ?>
                                 <div class="aa-event-type">
