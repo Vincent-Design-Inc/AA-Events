@@ -71,8 +71,15 @@ function events_has_admin_field_group() {
  *
  * Skips registration when an admin-created field group is already
  * assigned to the event post type, allowing full editorial control.
+ *
+ * Skips registration when an admin-created field group is already
+ * assigned to the event post type, allowing full editorial control.
  */
 function events_register_acf_fields() {
+	if ( events_has_admin_field_group() ) {
+		return;
+	}
+
 	if ( events_has_admin_field_group() ) {
 		return;
 	}
