@@ -112,41 +112,6 @@ $events               = new WP_Query(
 		'no_found_rows'          => true,
 		'update_post_meta_cache' => true,
 		'update_post_term_cache' => false,
-		'meta_query'             => array(
-			'relation' => 'OR',
-			array(
-				'relation' => 'AND',
-				array(
-					'key'     => '_aa_events_occurrence_index_version',
-					'value'   => AA_EVENTS_VERSION,
-					'compare' => '=',
-				),
-				array(
-					'key'     => '_aa_events_sort_start',
-					'value'   => $month['month_end']->format( 'Y-m-d 23:59:59' ),
-					'compare' => '<=',
-					'type'    => 'DATETIME',
-				),
-				array(
-					'key'     => '_aa_events_sort_end',
-					'value'   => $month['month_start']->format( 'Y-m-d 00:00:00' ),
-					'compare' => '>=',
-					'type'    => 'DATETIME',
-				),
-			),
-			array(
-				'relation' => 'OR',
-				array(
-					'key'     => '_aa_events_occurrence_index_version',
-					'compare' => 'NOT EXISTS',
-				),
-				array(
-					'key'     => '_aa_events_occurrence_index_version',
-					'value'   => AA_EVENTS_VERSION,
-					'compare' => '!=',
-				),
-			),
-		),
 	)
 );
 foreach ( $events->posts as $event_id ) {

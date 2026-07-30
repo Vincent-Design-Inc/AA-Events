@@ -309,6 +309,21 @@ function events_register_acf_fields() {
 						'default_value'     => '',
 						'placeholder'       => '',
 					),
+					array(
+						'key'               => 'field_aa_events_registration_link',
+						'label'             => 'Registration Link',
+						'name'              => 'registration_link',
+						'type'              => 'link',
+						'instructions'      => '',
+						'required'          => 0,
+						'conditional_logic' => 0,
+						'wrapper'           => array(
+							'width' => '',
+							'class' => '',
+							'id'    => '',
+						),
+						'return_format'     => 'array',
+					),
 				),
 				'location'              => array(
 					array(

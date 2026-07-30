@@ -93,6 +93,13 @@ get_header(); ?>
                                 </div>
                             <?php } ?>
                         </div>
+
+						<?php $registration_link_markup = aa_events_registration_link_markup( get_field( 'registration_link' ) ); ?>
+						<?php if ( $registration_link_markup ) : ?>
+						<div class="aa-event-registration">
+							<?php echo wp_kses_post( $registration_link_markup ); ?>
+						</div>
+						<?php endif; ?>
                     </footer><!-- .entry-footer -->
                 </article><!-- #post-<?php the_ID(); ?> -->
 

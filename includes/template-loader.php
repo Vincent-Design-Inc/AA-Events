@@ -27,6 +27,46 @@ function aa_events_contact_email_markup( $value ) {
 }
 
 /**
+ * Build safe registration-link markup for event templates.
+ *
+ * @param mixed $value Raw registration link value.
+ * @return string Escaped registration link, or an empty string for invalid input.
+ */
+function aa_events_registration_link_markup( $value ) {
+	if ( is_array( $value ) ) {
+		if ( ! isset( $value['url'] ) || ! is_string( $value['url'] ) ) {
+			return '';
+		}
+
+		$url    = trim( $value['url'] );
+		$target = isset( $value['target'] ) && is_string( $value['target'] ) ? $value['target'] : '';
+	} elseif ( is_string( $value ) ) {
+		$url    = trim( $value );
+		$target = '';
+	} else {
+		return '';
+	}
+
+	if ( '' === $url || false === filter_var( $url, FILTER_VALIDATE_URL ) ) {
+		return '';
+	}
+
+	$url_parts = wp_parse_url( $url );
+	if (
+		! is_array( $url_parts ) ||
+		empty( $url_parts['host'] ) ||
+		empty( $url_parts['scheme'] ) ||
+		! in_array( strtolower( $url_parts['scheme'] ), array( 'http', 'https' ), true )
+	) {
+		return '';
+	}
+
+	$target_attributes = '_blank' === $target ? ' target="_blank" rel="noopener noreferrer"' : '';
+
+	return '<a class="aa-event-registration-link button" href="' . esc_url( $url ) . '"' . $target_attributes . '>' . esc_html( __( 'Register', 'aa-events' ) ) . '</a>';
+}
+
+/**
  * Load a template.
  *
  * Handles template usage so that users can override the plugin's templates by using the theme.

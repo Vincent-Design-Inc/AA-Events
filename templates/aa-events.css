@@ -285,6 +285,30 @@
 	div { margin-bottom: 0.625rem; }
 }
 
+.aa-event-registration-link {
+	background: #005f73;
+	border: 2px solid #005f73;
+	border-radius: 0.25rem;
+	color: #fff;
+	display: inline-block;
+	font-weight: 700;
+	margin-top: 1.25rem;
+	padding: 0.625rem 1.25rem;
+	text-decoration: none;
+}
+
+.aa-event-registration-link:hover {
+	background: #003f4d;
+	border-color: #003f4d;
+	color: #fff;
+	text-decoration: underline;
+}
+
+.aa-event-registration-link:focus-visible {
+	outline: 3px solid #111;
+	outline-offset: 3px;
+}
+
 /* Events archive layout */
 .aa-events-wrap .aa-events-grid {
   display: grid;
