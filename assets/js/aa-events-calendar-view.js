@@ -64,6 +64,12 @@
   }
 
   function initOccurrenceGroups(root) {
+    if (root.__aaEventsOccurrenceGroupsInitialized) {
+      return;
+    }
+
+    root.__aaEventsOccurrenceGroupsInitialized = true;
+
     var segments = root.querySelectorAll('[data-aa-events-occurrence]');
     var groups = Object.create(null);
     var segmentIndex;
@@ -73,7 +79,10 @@
       var occurrenceKey = segment.getAttribute('data-aa-events-occurrence');
       var group;
 
-      if (!occurrenceKey) {
+      if (
+        !occurrenceKey ||
+        segment.closest('[data-aa-events-calendar]') !== root
+      ) {
         continue;
       }
 
