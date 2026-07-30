@@ -63,6 +63,83 @@
     }
   }
 
+  function initOccurrenceGroups(root) {
+    var segments = root.querySelectorAll('[data-aa-events-occurrence]');
+    var groups = Object.create(null);
+    var segmentIndex;
+
+    for (segmentIndex = 0; segmentIndex < segments.length; segmentIndex += 1) {
+      var segment = segments[segmentIndex];
+      var occurrenceKey = segment.getAttribute('data-aa-events-occurrence');
+      var group;
+
+      if (!occurrenceKey) {
+        continue;
+      }
+
+      group = groups[occurrenceKey];
+      if (!group) {
+        group = groups[occurrenceKey] = {
+          segments: [],
+          hoverCount: 0,
+          focusCount: 0,
+        };
+      }
+
+      group.segments.push(segment);
+    }
+
+    for (var occurrence in groups) {
+      if (Object.prototype.hasOwnProperty.call(groups, occurrence)) {
+        (function (group) {
+          function update() {
+            var active = group.hoverCount > 0 || group.focusCount > 0;
+
+            for (var index = 0; index < group.segments.length; index += 1) {
+              group.segments[index].classList.toggle('is-occurrence-active', active);
+            }
+          }
+
+          for (var index = 0; index < group.segments.length; index += 1) {
+            (function (segment) {
+              var hovered = false;
+              var focused = false;
+
+              segment.addEventListener('mouseenter', function () {
+                if (!hovered) {
+                  hovered = true;
+                  group.hoverCount += 1;
+                  update();
+                }
+              });
+              segment.addEventListener('mouseleave', function () {
+                if (hovered) {
+                  hovered = false;
+                  group.hoverCount -= 1;
+                  update();
+                }
+              });
+              segment.addEventListener('focus', function () {
+                if (!focused) {
+                  focused = true;
+                  group.focusCount += 1;
+                  update();
+                }
+              });
+              segment.addEventListener('blur', function () {
+                if (focused) {
+                  focused = false;
+                  group.focusCount -= 1;
+                  update();
+                }
+              });
+            })(group.segments[index]);
+          }
+        })(groups[occurrence]);
+      }
+    }
+  }
+
   function getInstance(root) {
     var calendarButton = root.querySelector(
       '[data-aa-events-view-button="calendar"]'
@@ -92,6 +169,7 @@
     var preference;
 
     for (var index = 0; index < roots.length; index += 1) {
+      initOccurrenceGroups(roots[index]);
       var instance = getInstance(roots[index]);
 
       if (instance) {
