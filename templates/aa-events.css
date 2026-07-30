@@ -196,7 +196,8 @@
 	line-height: 1;
 }
 
-.aa-events-calendar-event:hover {
+.aa-events-calendar-event:hover,
+.aa-events-calendar-event.is-occurrence-active {
 	background: #163d5d;
 	text-decoration: underline;
 }
