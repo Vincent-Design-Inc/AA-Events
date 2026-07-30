@@ -117,14 +117,15 @@ $events               = new WP_Query(
 foreach ( $events->posts as $event_id ) {
 	$event_title     = get_the_title( $event_id );
 	$event_permalink = get_permalink( $event_id );
-	foreach ( aa_events_get_occurrences( $event_id ) as $occurrence ) {
+	foreach ( aa_events_get_occurrences( $event_id ) as $occurrence_index => $occurrence ) {
 		if ( ! is_array( $occurrence ) || ! aa_events_occurrence_intersects_range( $occurrence, $month['month_start'], $month['month_end'] ) ) {
 			continue;
 		}
-		$occurrence['post_id']   = (int) $event_id;
-		$occurrence['title']     = $event_title;
-		$occurrence['permalink'] = $event_permalink;
-		$calendar_occurrences[]  = $occurrence;
+		$occurrence['post_id']                 = (int) $event_id;
+		$occurrence['title']                   = $event_title;
+		$occurrence['permalink']               = $event_permalink;
+		$occurrence['calendar_occurrence_key'] = aa_events_calendar_occurrence_key( $event_id, $occurrence_index );
+		$calendar_occurrences[]                = $occurrence;
 	}
 }
 
@@ -211,7 +212,7 @@ $calendar_url      = static function ( DateTimeImmutable $date ) use ( $calendar
 							/* translators: 1: event title, 2: complete event date and time range. */
 							$event_label = sprintf( __( '%1$s: %2$s', 'aa-events' ), $segment['title'], aa_events_format_occurrence( $segment ) );
 							?>
-							<a class="<?php echo esc_attr( implode( ' ', $event_classes ) ); ?>" style="--aa-event-column: <?php echo esc_attr( (int) $segment['start_column'] ); ?>; --aa-event-span: <?php echo esc_attr( (int) $segment['span'] ); ?>; --aa-event-lane: <?php echo esc_attr( (int) $segment['lane'] ); ?>;" href="<?php echo esc_url( $segment['permalink'] ); ?>" aria-label="<?php echo esc_attr( $event_label ); ?>">
+							<a class="<?php echo esc_attr( implode( ' ', $event_classes ) ); ?>" style="--aa-event-column: <?php echo esc_attr( (int) $segment['start_column'] ); ?>; --aa-event-span: <?php echo esc_attr( (int) $segment['span'] ); ?>; --aa-event-lane: <?php echo esc_attr( (int) $segment['lane'] ); ?>;" href="<?php echo esc_url( $segment['permalink'] ); ?>" aria-label="<?php echo esc_attr( $event_label ); ?>" data-aa-events-occurrence="<?php echo esc_attr( $segment['calendar_occurrence_key'] ); ?>">
 								<?php
 								if ( ! empty( $segment['continues_before'] ) ) :
 									?>

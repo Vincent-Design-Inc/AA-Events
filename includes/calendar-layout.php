@@ -82,6 +82,17 @@ function aa_events_occurrence_intersects_range( array $occurrence, DateTimeImmut
 }
 
 /**
+ * Build a stable key for an event occurrence within a calendar render.
+ *
+ * @param mixed $post_id          Event post ID.
+ * @param mixed $occurrence_index Zero-based occurrence index for the event.
+ * @return string
+ */
+function aa_events_calendar_occurrence_key( $post_id, $occurrence_index ) {
+	return (int) $post_id . '-' . (int) $occurrence_index;
+}
+
+/**
  * Clip an occurrence to a month and split it at week boundaries.
  *
  * @param array $occurrence Occurrence metadata.
