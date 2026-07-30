@@ -58,7 +58,7 @@ No archive, agenda-list, or single-event markup changes are required.
 
 ## Versioning
 
-The plugin header, `AA_EVENTS_VERSION`, standalone test bootstrap, and version contract will move from `1.2.5` to `1.2.6`. This patch release ensures browsers request the updated calendar controller and plugin stylesheet instead of reusing cached `1.2.5` assets.
+The plugin header, `AA_EVENTS_VERSION`, standalone test bootstrap, and version contract will move from the existing `1.2.6` release to `1.2.7`. This patch release ensures browsers request the updated calendar controller and plugin stylesheet instead of reusing cached `1.2.6` assets.
 
 Because the occurrence index currently uses `AA_EVENTS_VERSION` as its schema marker, the bump will schedule the existing bounded index backfill. No occurrence data migration or schema change is otherwise required.
 
@@ -66,7 +66,7 @@ Because the occurrence index currently uses `AA_EVENTS_VERSION` as its schema ma
 
 Plugin tests will verify:
 
-- Version references agree on `1.2.6`.
+- Version references agree on `1.2.7`.
 - Continuous occurrences preserve one key across all week segments.
 - Separate normalized occurrences for the same event receive different keys.
 - Rendered cross-week anchors expose matching occurrence attributes.
