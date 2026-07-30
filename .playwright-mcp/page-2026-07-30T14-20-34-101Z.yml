@@ -1,0 +1,220 @@
+- generic [ref=f3e1]:
+  - link "Skip to main content" [ref=f3e2] [cursor=pointer]:
+    - /url: "#maincontent"
+  - banner [ref=f3e3]:
+    - generic [ref=f3e4]:
+      - link [ref=f3e5] [cursor=pointer]:
+        - /url: http://mnbc.local
+        - img "Go to MNBC homepage" [ref=f3e6]
+      - generic [ref=f3e7]:
+        - generic [ref=f3e8]:
+          - search [ref=f3e9]:
+            - generic [ref=f3e10]:
+              - generic:
+                - generic [ref=f3e11]: Search
+                - img "Search" [ref=f3e12]
+              - searchbox "Search Search" [ref=f3e14]
+          - generic "Apply for Citizenship" [ref=f3e15]:
+            - link "Apply for Citizenship" [ref=f3e16] [cursor=pointer]:
+              - /url: http://mnbc.local/apply-for-citizenship/
+        - navigation "Main navigation" [ref=f3e17]:
+          - button "Menu" [ref=f3e18]
+          - text:     
+  - main [ref=f3e25]:
+    - generic [ref=f3e28]:
+      - navigation "Breadcrumbs" [ref=f3e30]:
+        - link "Home" [ref=f3e32] [cursor=pointer]:
+          - /url: http://mnbc.local
+        - link "News and Events" [ref=f3e39] [cursor=pointer]:
+          - /url: http://mnbc.local/news-and-events/
+        - generic [ref=f3e42]: Events Calendar
+      - heading "Events Calendar" [level=1] [ref=f3e44]
+    - main [ref=f3e60]:
+      - generic [ref=f3e61]:
+        - generic [ref=f3e62]:
+          - link "Today" [ref=f3e64] [cursor=pointer]:
+            - /url: /news-and-events/events-calendar/?aa_month=7&aa_year=2026
+          - group "Calendar view" [ref=f3e65]:
+            - button "Calendar" [active] [pressed] [ref=f3e66] [cursor=pointer]
+            - button "List" [ref=f3e67] [cursor=pointer]
+        - generic [ref=f3e68]:
+          - link "Go to July 2026" [ref=f3e69] [cursor=pointer]:
+            - /url: /news-and-events/events-calendar/?aa_month=7&aa_year=2026
+            - text: « Previous Month
+          - heading "August 2026" [level=2] [ref=f3e70]
+          - link "Go to September 2026" [ref=f3e71] [cursor=pointer]:
+            - /url: /news-and-events/events-calendar/?aa_month=9&aa_year=2026
+            - text: Next Month »
+        - grid "August 2026" [ref=f3e159]:
+          - row [ref=f3e160]:
+            - columnheader "Mon" [ref=f3e161]
+            - columnheader "Tue" [ref=f3e162]
+            - columnheader "Wed" [ref=f3e163]
+            - columnheader "Thu" [ref=f3e164]
+            - columnheader "Fri" [ref=f3e165]
+            - columnheader "Sat" [ref=f3e166]
+            - columnheader "Sun" [ref=f3e167]
+          - row [ref=f3e168]:
+            - gridcell "July 27, 2026" [ref=f3e169]:
+              - generic [ref=f3e170]: "27"
+            - gridcell "July 28, 2026" [ref=f3e171]:
+              - generic [ref=f3e172]: "28"
+            - gridcell "July 29, 2026" [ref=f3e173]:
+              - generic [ref=f3e174]: "29"
+            - gridcell "July 30, 2026" [ref=f3e175]:
+              - generic [ref=f3e176]: "30"
+            - gridcell "July 31, 2026" [ref=f3e177]:
+              - generic [ref=f3e178]: "31"
+            - gridcell "August 1, 2026" [ref=f3e179]:
+              - generic [ref=f3e180]: "1"
+            - gridcell "August 2, 2026" [ref=f3e181]:
+              - generic [ref=f3e182]: "2"
+          - row [ref=f3e183]:
+            - gridcell "August 3, 2026" [ref=f3e184]:
+              - generic [ref=f3e185]: "3"
+            - gridcell "August 4, 2026" [ref=f3e186]:
+              - generic [ref=f3e187]: "4"
+            - gridcell "August 5, 2026" [ref=f3e188]:
+              - generic [ref=f3e189]: "5"
+            - gridcell "August 6, 2026" [ref=f3e190]:
+              - generic [ref=f3e191]: "6"
+            - gridcell "August 7, 2026" [ref=f3e192]:
+              - generic [ref=f3e193]: "7"
+            - gridcell "August 8, 2026" [ref=f3e194]:
+              - generic [ref=f3e195]: "8"
+            - gridcell "August 9, 2026" [ref=f3e196]:
+              - generic [ref=f3e197]: "9"
+          - row [ref=f3e198]:
+            - gridcell "August 10, 2026" [ref=f3e199]:
+              - generic [ref=f3e200]: "10"
+            - gridcell "August 11, 2026" [ref=f3e201]:
+              - generic [ref=f3e202]: "11"
+            - gridcell "August 12, 2026" [ref=f3e203]:
+              - generic [ref=f3e204]: "12"
+            - gridcell "August 13, 2026" [ref=f3e205]:
+              - generic [ref=f3e206]: "13"
+            - gridcell "August 14, 2026" [ref=f3e207]:
+              - generic [ref=f3e208]: "14"
+            - gridcell "August 15, 2026" [ref=f3e209]:
+              - generic [ref=f3e210]: "15"
+            - gridcell "August 16, 2026" [ref=f3e211]:
+              - generic [ref=f3e212]: "16"
+          - row [ref=f3e213]:
+            - gridcell "August 17, 2026" [ref=f3e214]:
+              - generic [ref=f3e215]: "17"
+            - gridcell "August 18, 2026" [ref=f3e216]:
+              - generic [ref=f3e217]: "18"
+            - gridcell "August 19, 2026" [ref=f3e218]:
+              - generic [ref=f3e219]: "19"
+            - gridcell "August 20, 2026" [ref=f3e220]:
+              - generic [ref=f3e221]: "20"
+            - gridcell "August 21, 2026" [ref=f3e222]:
+              - generic [ref=f3e223]: "21"
+            - gridcell "August 22, 2026" [ref=f3e224]:
+              - generic [ref=f3e225]: "22"
+            - gridcell "August 23, 2026" [ref=f3e226]:
+              - generic [ref=f3e227]: "23"
+          - row [ref=f3e228]:
+            - gridcell "August 24, 2026" [ref=f3e229]:
+              - generic [ref=f3e230]: "24"
+            - gridcell "August 25, 2026" [ref=f3e231]:
+              - generic [ref=f3e232]: "25"
+            - gridcell "August 26, 2026" [ref=f3e233]:
+              - generic [ref=f3e234]: "26"
+            - gridcell "August 27, 2026" [ref=f3e235]:
+              - generic [ref=f3e236]: "27"
+            - gridcell "August 28, 2026" [ref=f3e237]:
+              - generic [ref=f3e238]: "28"
+            - gridcell "August 29, 2026" [ref=f3e239]:
+              - generic [ref=f3e240]: "29"
+            - gridcell "August 30, 2026" [ref=f3e241]:
+              - generic [ref=f3e242]: "30"
+          - row [ref=f3e243]:
+            - gridcell "August 31, 2026" [ref=f3e244]:
+              - generic [ref=f3e245]: "31"
+            - gridcell "September 1, 2026" [ref=f3e246]:
+              - generic [ref=f3e247]: "1"
+            - gridcell "September 2, 2026" [ref=f3e248]:
+              - generic [ref=f3e249]: "2"
+            - gridcell "September 3, 2026" [ref=f3e250]:
+              - generic [ref=f3e251]: "3"
+            - gridcell "September 4, 2026" [ref=f3e252]:
+              - generic [ref=f3e253]: "4"
+            - gridcell "September 5, 2026" [ref=f3e254]:
+              - generic [ref=f3e255]: "5"
+            - gridcell "September 6, 2026" [ref=f3e256]:
+              - generic [ref=f3e257]: "6"
+  - contentinfo [ref=f3e75]:
+    - generic [ref=f3e77]:
+      - heading "Land Acknowledgement" [level=2] [ref=f3e79]
+      - generic [ref=f3e91]:
+        - paragraph [ref=f3e92]: Métis Nation British Columbia respects the inherent and treaty rights of all 204 First Nations across British Columbia, where our work takes place. We recognize and honour their continued stewardship and governance.
+        - paragraph [ref=f3e93]: Métis Nation British Columbia is the Métis government in British Columbia, and recognizes the 38 Métis Chartered Communities located across the province. These Métis Chartered Communities provide Métis people with local programming and opportunities for cultural connection and belonging, sometimes after generations of displacement. We celebrate the meaningful contributions of these Communities and of Métis people, both historically and in the present day.
+    - generic [ref=f3e97]:
+      - generic [ref=f3e98]:
+        - generic [ref=f3e99]:
+          - heading [level=2] [ref=f3e100]:
+            - link [ref=f3e101] [cursor=pointer]:
+              - /url: http://mnbc.local/
+              - img "Go to MNBC homepage" [ref=f3e102]
+          - generic [ref=f3e103]:
+            - link " Visit our facebookpage" [ref=f3e104] [cursor=pointer]:
+              - /url: https://www.facebook.com/metisnationbritishcolumbia/
+              - generic [ref=f3e105]: 
+              - generic [ref=f3e106]: Visit our facebookpage
+            - link " Visit our twitterpage" [ref=f3e107] [cursor=pointer]:
+              - /url: https://twitter.com/MetisNationBC
+              - generic [ref=f3e108]: 
+              - generic [ref=f3e109]: Visit our twitterpage
+            - link " Visit our instagrampage" [ref=f3e110] [cursor=pointer]:
+              - /url: https://www.instagram.com/metisnationbc/
+              - generic [ref=f3e111]: 
+              - generic [ref=f3e112]: Visit our instagrampage
+            - link " Visit our youtubepage" [ref=f3e113] [cursor=pointer]:
+              - /url: https://www.youtube.com/channel/UCV-L3mbG7dwBG9LXRaqvXqA
+              - generic [ref=f3e114]: 
+              - generic [ref=f3e115]: Visit our youtubepage
+            - link " Visit our linkedinpage" [ref=f3e116] [cursor=pointer]:
+              - /url: https://www.linkedin.com/company/m%C3%A9tis-nation-british-columbia/mycompany/?viewAsMember=true
+              - generic [ref=f3e117]: 
+              - generic [ref=f3e118]: Visit our linkedinpage
+        - generic [ref=f3e119]:
+          - heading "Contact Information:" [level=3] [ref=f3e120]
+          - paragraph [ref=f3e121]: "#380 – 13401 108 Ave Surrey, BC V3T 5T3"
+          - 'link "Telephone: 604-557-5851" [ref=f3e122] [cursor=pointer]':
+            - /url: tel:604-557-5851
+            - generic [ref=f3e123]: "Telephone:"
+            - text: 604-557-5851
+          - 'link "Toll-free Number: 1-800-940-1150" [ref=f3e125] [cursor=pointer]':
+            - /url: tel:1-800-940-1150
+            - generic [ref=f3e126]: "Toll-free Number:"
+            - text: 1-800-940-1150
+          - generic [ref=f3e128]:
+            - heading "Office Hours:" [level=3] [ref=f3e129]
+            - paragraph [ref=f3e130]: Monday to Friday 8:30am - 4:30pm
+        - generic [ref=f3e131]:
+          - heading "Navigation" [level=3] [ref=f3e132]
+          - navigation "Footer navigation" [ref=f3e133]:
+            - list [ref=f3e134]:
+              - listitem [ref=f3e135]:
+                - link "Privacy Policy" [ref=f3e136] [cursor=pointer]:
+                  - /url: http://mnbc.local/privacy-policy/
+              - listitem [ref=f3e138]:
+                - link "Careers with MNBC" [ref=f3e139] [cursor=pointer]:
+                  - /url: http://mnbc.local/careers-with-mnbc/
+              - listitem [ref=f3e141]:
+                - link "Business Directory" [ref=f3e142] [cursor=pointer]:
+                  - /url: http://mnbc.local/business-directory/
+              - listitem [ref=f3e144]:
+                - link "Citizen's Hub" [ref=f3e145] [cursor=pointer]:
+                  - /url: https://metishub.ca/login
+              - listitem [ref=f3e147]:
+                - link "Métis Trading Post" [ref=f3e148] [cursor=pointer]:
+                  - /url: http://mnbc.local/trading-post/
+        - generic [ref=f3e150]:
+          - heading "Keep up to date with Métis Nation British Columbia" [level=2] [ref=f3e151]
+          - paragraph [ref=f3e152]: Join our newsletter today for MNBC’s latest news and events.
+          - generic "Subscribe" [ref=f3e153]:
+            - link "Subscribe" [ref=f3e154] [cursor=pointer]:
+              - /url: https://mnbc.us12.list-manage.com/subscribe?u=8d7d51f6e6d946ea400617dfa&id=283dd97778
+      - generic [ref=f3e155]: © 2026 Nation British Columbia.

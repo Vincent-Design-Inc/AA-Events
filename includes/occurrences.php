@@ -60,14 +60,66 @@ function aa_events_occurrence_boolean( $value ) {
 }
 
 /**
+ * Parse a date returned by the built-in or supported override ACF fields.
+ *
+ * @param mixed $value Raw date.
+ * @return string|null
+ */
+function aa_events_parse_occurrence_date( $value ) {
+	foreach ( array( 'Y-m-d', 'Ymd', 'F j, Y' ) as $format ) {
+		$date = aa_events_parse_occurrence_value( $value, $format, 'Y-m-d' );
+		if ( null !== $date ) {
+			return $date;
+		}
+	}
+	return null;
+}
+
+/**
  * Parse a time with or without seconds.
  *
  * @param mixed $value Raw time.
  * @return string|null
  */
 function aa_events_parse_occurrence_time( $value ) {
-	$time = aa_events_parse_occurrence_value( $value, 'H:i:s', 'H:i:s' );
-	return null === $time ? aa_events_parse_occurrence_value( $value, 'H:i', 'H:i:s' ) : $time;
+	foreach ( array( 'H:i:s', 'H:i', 'g:i a' ) as $format ) {
+		$time = aa_events_parse_occurrence_value( $value, $format, 'H:i:s' );
+		if ( null !== $time ) {
+			return $time;
+		}
+	}
+	return null;
+}
+
+/**
+ * Read a field through its active ACF definition when possible.
+ *
+ * Hidden ACF metadata references can point to the inactive built-in or
+ * override field key when both groups use the same field name. Resolving the
+ * active definition by name keeps reads independent of that stale reference.
+ *
+ * @param string $name    Field name.
+ * @param int    $post_id Event post ID.
+ * @return mixed
+ */
+function aa_events_get_active_field_value( $name, $post_id ) {
+	if ( function_exists( 'acf_get_field' ) && function_exists( 'acf_get_value' ) && function_exists( 'acf_format_value' ) ) {
+		$field = acf_get_field( $name );
+		if ( is_array( $field ) && $name === ( $field['name'] ?? '' ) ) {
+			$value = acf_format_value( acf_get_value( $post_id, $field ), $post_id, $field );
+			if ( is_array( $value ) ) {
+				return $value;
+			}
+			if ( function_exists( 'get_post_meta' ) ) {
+				$raw_value = get_post_meta( $post_id, $name, true );
+				if ( is_array( $raw_value ) ) {
+					return $raw_value;
+				}
+			}
+			return $value;
+		}
+	}
+	return get_field( $name, $post_id );
 }
 
 /**
@@ -129,7 +181,7 @@ function aa_events_occurrence_range_is_valid( $start_date, $start_time, $end_dat
 function aa_events_normalize_occurrence_row( array $row, $source = 'event_dates', $post_id = 0 ) {
 	$source         = in_array( $source, array( 'event_dates', 'event_datetime', 'legacy_separate' ), true ) ? $source : 'event_dates';
 	$start_inferred = 'event_dates' !== $source;
-	$start_date     = aa_events_parse_occurrence_value( $row['start_date'] ?? $row['date'] ?? '', 'Y-m-d', 'Y-m-d' );
+	$start_date     = aa_events_parse_occurrence_date( $row['start_date'] ?? $row['date'] ?? '' );
 	if ( null === $start_date ) {
 		return null;
 	}
@@ -138,7 +190,7 @@ function aa_events_normalize_occurrence_row( array $row, $source = 'event_dates'
 	if ( null === $end_input ) {
 		return null;
 	}
-	$end_date = '' === $end_input ? $start_date : aa_events_parse_occurrence_value( $end_input, 'Y-m-d', 'Y-m-d' );
+	$end_date = '' === $end_input ? $start_date : aa_events_parse_occurrence_date( $end_input );
 	if ( null === $end_date ) {
 		return null;
 	}
@@ -187,8 +239,12 @@ function aa_events_normalize_occurrence_row( array $row, $source = 'event_dates'
  */
 function aa_events_get_occurrences( $post_id ) {
 	$post_id     = (int) $post_id;
-	$rows        = get_field( 'event_dates', $post_id );
+	$rows        = aa_events_get_active_field_value( 'event_dates', $post_id );
 	$occurrences = array();
+
+	if ( ! is_array( $rows ) || ! $rows ) {
+		$rows = aa_events_get_active_field_value( 'multiple_dates', $post_id );
+	}
 
 	if ( is_array( $rows ) && $rows ) {
 		foreach ( $rows as $row ) {
@@ -297,7 +353,7 @@ function events_get_all_event_dates( $post_id ) {
  * @return string Empty when valid, otherwise an error message.
  */
 function aa_events_validate_occurrence_row( array $row ) {
-	$start = aa_events_parse_occurrence_value( $row['start_date'] ?? $row['date'] ?? '', 'Y-m-d', 'Y-m-d' );
+	$start = aa_events_parse_occurrence_date( $row['start_date'] ?? $row['date'] ?? '' );
 	if ( null === $start ) {
 		return __( 'Start date is required and must be valid.', 'aa-events' );
 	}
@@ -305,7 +361,7 @@ function aa_events_validate_occurrence_row( array $row ) {
 	if ( null === $end_input ) {
 		return __( 'End date must be valid.', 'aa-events' );
 	}
-	$end = '' === $end_input ? $start : aa_events_parse_occurrence_value( $end_input, 'Y-m-d', 'Y-m-d' );
+	$end = '' === $end_input ? $start : aa_events_parse_occurrence_date( $end_input );
 	if ( null === $end ) {
 		return __( 'End date must be valid.', 'aa-events' );
 	}
@@ -447,6 +503,73 @@ function aa_events_occurrence_time_markup( array $occurrence ) {
 }
 
 /**
+ * Copy legacy local-override repeater rows into the canonical repeater.
+ *
+ * Existing legacy metadata is intentionally preserved. Canonical rows always
+ * win, making this migration safe to run repeatedly.
+ *
+ * @param int $post_id Event post ID.
+ * @return bool Whether canonical rows were written.
+ */
+function aa_events_migrate_multiple_dates_occurrences( $post_id ) {
+	$post_id = (int) $post_id;
+	if ( ! $post_id || 'event' !== get_post_type( $post_id ) ) {
+		return false;
+	}
+
+	$write_rows = static function ( $source_rows ) use ( $post_id ) {
+		$rows = array();
+		foreach ( $source_rows as $source_row ) {
+			if ( ! is_array( $source_row ) ) {
+				continue;
+			}
+			$occurrence = aa_events_normalize_occurrence_row( $source_row, 'event_dates', $post_id );
+			if ( null === $occurrence ) {
+				continue;
+			}
+			$rows[] = array(
+				'date'       => $occurrence['start_date'],
+				'start_time' => $occurrence['start_time'],
+				'end_date'   => empty( $source_row['end_date'] ) ? '' : $occurrence['end_date'],
+				'end_time'   => $occurrence['end_time'],
+				'all_day'    => $occurrence['all_day'] ? 1 : 0,
+			);
+		}
+		if ( ! $rows ) {
+			return false;
+		}
+
+		$selector = 'event_dates';
+		if ( function_exists( 'acf_get_field' ) ) {
+			$field = acf_get_field( 'event_dates' );
+			if ( is_array( $field ) && ! empty( $field['key'] ) ) {
+				$selector = $field['key'];
+			}
+		}
+		return (bool) update_field( $selector, $rows, $post_id );
+	};
+
+	if ( function_exists( 'get_post_meta' ) ) {
+		$raw_canonical_rows = get_post_meta( $post_id, 'event_dates', true );
+		if ( is_array( $raw_canonical_rows ) && $raw_canonical_rows ) {
+			return $write_rows( $raw_canonical_rows );
+		}
+	}
+
+	$canonical_rows = aa_events_get_active_field_value( 'event_dates', $post_id );
+	if ( is_array( $canonical_rows ) && $canonical_rows ) {
+		return false;
+	}
+
+	$legacy_rows = aa_events_get_active_field_value( 'multiple_dates', $post_id );
+	if ( ! is_array( $legacy_rows ) || ! $legacy_rows ) {
+		return false;
+	}
+
+	return $write_rows( $legacy_rows );
+}
+
+/**
  * Migrate the first parseable legacy occurrence into the repeater.
  *
  * @param int $post_id Event post ID.
@@ -487,6 +610,7 @@ function aa_events_migrate_legacy_on_save( $post_id ) {
 	if ( ! $post_id || wp_is_post_autosave( $post_id ) || wp_is_post_revision( $post_id ) || 'event' !== get_post_type( $post_id ) ) {
 		return;
 	}
+	aa_events_migrate_multiple_dates_occurrences( $post_id );
 	aa_events_migrate_legacy_occurrence( $post_id );
 }
 
@@ -579,11 +703,11 @@ function aa_events_run_occurrence_index_backfill() {
  * @return bool
  */
 function aa_events_sort_source_meta_key( $meta_key ) {
-	if ( in_array( $meta_key, array( 'event_dates', 'event_datetime', 'date', 'start_time' ), true ) ) {
+	if ( in_array( $meta_key, array( 'event_dates', 'multiple_dates', 'event_datetime', 'date', 'start_time' ), true ) ) {
 		return true;
 	}
 
-	return (bool) preg_match( '/^event_dates_[0-9]+_(date|start_time|end_date|end_time|all_day)$/', $meta_key );
+	return (bool) preg_match( '/^(event_dates|multiple_dates)_[0-9]+_(date|start_time|end_date|end_time|all_day)$/', $meta_key );
 }
 
 /**
@@ -623,7 +747,7 @@ function aa_events_run_queued_sort_sync() {
 
 	foreach ( array_keys( $queue ) as $post_id ) {
 		if ( function_exists( 'acf_flush_value_cache' ) ) {
-			foreach ( array( 'event_dates', 'event_datetime', 'date', 'start_time' ) as $field_name ) {
+			foreach ( array( 'event_dates', 'multiple_dates', 'event_datetime', 'date', 'start_time' ) as $field_name ) {
 				acf_flush_value_cache( $post_id, $field_name );
 			}
 		}

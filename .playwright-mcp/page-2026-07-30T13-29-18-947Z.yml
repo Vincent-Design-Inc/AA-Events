@@ -1,0 +1,204 @@
+- generic [active] [ref=e1]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#maincontent"
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - link [ref=e5] [cursor=pointer]:
+        - /url: http://mnbc.local
+        - img "Go to MNBC homepage" [ref=e6]
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - search [ref=e9]:
+            - generic [ref=e10]:
+              - generic:
+                - generic [ref=e11]: Search
+                - img "Search" [ref=e12]
+              - searchbox "Search Search" [ref=e14]
+          - generic "Apply for Citizenship" [ref=e15]:
+            - link "Apply for Citizenship" [ref=e16] [cursor=pointer]:
+              - /url: http://mnbc.local/apply-for-citizenship/
+        - navigation "Main navigation" [ref=e17]:
+          - button "Menu" [ref=e18]
+          - text:     
+  - main [ref=e25]:
+    - generic [ref=e28]:
+      - navigation "Breadcrumbs" [ref=e30]:
+        - link "Home" [ref=e32] [cursor=pointer]:
+          - /url: http://mnbc.local
+        - link "News and Events" [ref=e39] [cursor=pointer]:
+          - /url: http://mnbc.local/news-and-events/
+        - generic [ref=e42]: Events Calendar
+      - heading "Events Calendar" [level=1] [ref=e44]
+    - main [ref=e60]:
+      - generic [ref=e61]:
+        - link "Today" [ref=e63] [cursor=pointer]:
+          - /url: /news-and-events/events-calendar/?aa_month=7&aa_year=2026
+        - generic [ref=e64]:
+          - link "Go to June 2026" [ref=e65] [cursor=pointer]:
+            - /url: /news-and-events/events-calendar/?aa_month=6&aa_year=2026
+            - text: « Previous Month
+          - heading "July 2026" [level=2] [ref=e66]
+          - link "Go to August 2026" [ref=e67] [cursor=pointer]:
+            - /url: /news-and-events/events-calendar/?aa_month=8&aa_year=2026
+            - text: Next Month »
+        - grid "July 2026" [ref=e69]:
+          - row [ref=e70]:
+            - columnheader "Mon" [ref=e71]
+            - columnheader "Tue" [ref=e72]
+            - columnheader "Wed" [ref=e73]
+            - columnheader "Thu" [ref=e74]
+            - columnheader "Fri" [ref=e75]
+            - columnheader "Sat" [ref=e76]
+            - columnheader "Sun" [ref=e77]
+          - row [ref=e78]:
+            - gridcell "June 29, 2026" [ref=e79]:
+              - generic [ref=e80]: "29"
+            - gridcell "June 30, 2026" [ref=e81]:
+              - generic [ref=e82]: "30"
+            - gridcell "July 1, 2026" [ref=e83]:
+              - generic [ref=e84]: "1"
+            - gridcell "July 2, 2026" [ref=e85]:
+              - generic [ref=e86]: "2"
+            - gridcell "July 3, 2026" [ref=e87]:
+              - generic [ref=e88]: "3"
+            - gridcell "July 4, 2026" [ref=e89]:
+              - generic [ref=e90]: "4"
+            - gridcell "July 5, 2026" [ref=e91]:
+              - generic [ref=e92]: "5"
+          - row [ref=e93]:
+            - gridcell "July 6, 2026" [ref=e94]:
+              - generic [ref=e95]: "6"
+            - gridcell "July 7, 2026" [ref=e96]:
+              - generic [ref=e97]: "7"
+            - gridcell "July 8, 2026" [ref=e98]:
+              - generic [ref=e99]: "8"
+            - gridcell "July 9, 2026" [ref=e100]:
+              - generic [ref=e101]: "9"
+            - gridcell "July 10, 2026" [ref=e102]:
+              - generic [ref=e103]: "10"
+            - gridcell "July 11, 2026" [ref=e104]:
+              - generic [ref=e105]: "11"
+            - gridcell "July 12, 2026" [ref=e106]:
+              - generic [ref=e107]: "12"
+          - row [ref=e108]:
+            - gridcell "July 13, 2026" [ref=e109]:
+              - generic [ref=e110]: "13"
+            - gridcell "July 14, 2026" [ref=e111]:
+              - generic [ref=e112]: "14"
+            - gridcell "July 15, 2026" [ref=e113]:
+              - generic [ref=e114]: "15"
+            - gridcell "July 16, 2026" [ref=e115]:
+              - generic [ref=e116]: "16"
+              - 'link "Test: July 16, 2026, 12:00 AM" [ref=e117] [cursor=pointer]':
+                - /url: http://mnbc.local/events/test/
+                - generic [ref=e118]: Test
+            - gridcell "July 17, 2026" [ref=e119]:
+              - generic [ref=e120]: "17"
+            - gridcell "July 18, 2026" [ref=e121]:
+              - generic [ref=e122]: "18"
+            - gridcell "July 19, 2026" [ref=e123]:
+              - generic [ref=e124]: "19"
+          - row [ref=e125]:
+            - gridcell "July 20, 2026" [ref=e126]:
+              - generic [ref=e127]: "20"
+            - gridcell "July 21, 2026" [ref=e128]:
+              - generic [ref=e129]: "21"
+            - gridcell "July 22, 2026" [ref=e130]:
+              - generic [ref=e131]: "22"
+            - gridcell "July 23, 2026" [ref=e132]:
+              - generic [ref=e133]: "23"
+            - gridcell "July 24, 2026" [ref=e134]:
+              - generic [ref=e135]: "24"
+            - gridcell "July 25, 2026" [ref=e136]:
+              - generic [ref=e137]: "25"
+            - gridcell "July 26, 2026" [ref=e138]:
+              - generic [ref=e139]: "26"
+          - row [ref=e140]:
+            - gridcell "July 27, 2026" [ref=e141]:
+              - generic [ref=e142]: "27"
+            - gridcell "July 28, 2026" [ref=e143]:
+              - generic [ref=e144]: "28"
+            - gridcell "July 29, 2026" [ref=e145]:
+              - generic [ref=e146]: "29"
+            - gridcell "July 30, 2026" [ref=e147]:
+              - generic [ref=e148]: "30"
+            - gridcell "July 31, 2026" [ref=e149]:
+              - generic [ref=e150]: "31"
+            - gridcell "August 1, 2026" [ref=e151]:
+              - generic [ref=e152]: "1"
+            - gridcell "August 2, 2026" [ref=e153]:
+              - generic [ref=e154]: "2"
+  - contentinfo [ref=e155]:
+    - generic [ref=e157]:
+      - heading "Land Acknowledgement" [level=2] [ref=e159]
+      - generic [ref=e171]:
+        - paragraph [ref=e172]: Métis Nation British Columbia respects the inherent and treaty rights of all 204 First Nations across British Columbia, where our work takes place. We recognize and honour their continued stewardship and governance.
+        - paragraph [ref=e173]: Métis Nation British Columbia is the Métis government in British Columbia, and recognizes the 38 Métis Chartered Communities located across the province. These Métis Chartered Communities provide Métis people with local programming and opportunities for cultural connection and belonging, sometimes after generations of displacement. We celebrate the meaningful contributions of these Communities and of Métis people, both historically and in the present day.
+    - generic [ref=e177]:
+      - generic [ref=e178]:
+        - generic [ref=e179]:
+          - heading [level=2] [ref=e180]:
+            - link [ref=e181] [cursor=pointer]:
+              - /url: http://mnbc.local/
+              - img "Go to MNBC homepage" [ref=e182]
+          - generic [ref=e183]:
+            - link " Visit our facebookpage" [ref=e184] [cursor=pointer]:
+              - /url: https://www.facebook.com/metisnationbritishcolumbia/
+              - generic [ref=e185]: 
+              - generic [ref=e186]: Visit our facebookpage
+            - link " Visit our twitterpage" [ref=e187] [cursor=pointer]:
+              - /url: https://twitter.com/MetisNationBC
+              - generic [ref=e188]: 
+              - generic [ref=e189]: Visit our twitterpage
+            - link " Visit our instagrampage" [ref=e190] [cursor=pointer]:
+              - /url: https://www.instagram.com/metisnationbc/
+              - generic [ref=e191]: 
+              - generic [ref=e192]: Visit our instagrampage
+            - link " Visit our youtubepage" [ref=e193] [cursor=pointer]:
+              - /url: https://www.youtube.com/channel/UCV-L3mbG7dwBG9LXRaqvXqA
+              - generic [ref=e194]: 
+              - generic [ref=e195]: Visit our youtubepage
+            - link " Visit our linkedinpage" [ref=e196] [cursor=pointer]:
+              - /url: https://www.linkedin.com/company/m%C3%A9tis-nation-british-columbia/mycompany/?viewAsMember=true
+              - generic [ref=e197]: 
+              - generic [ref=e198]: Visit our linkedinpage
+        - generic [ref=e199]:
+          - heading "Contact Information:" [level=3] [ref=e200]
+          - paragraph [ref=e201]: "#380 – 13401 108 Ave Surrey, BC V3T 5T3"
+          - 'link "Telephone: 604-557-5851" [ref=e202] [cursor=pointer]':
+            - /url: tel:604-557-5851
+            - generic [ref=e203]: "Telephone:"
+            - text: 604-557-5851
+          - 'link "Toll-free Number: 1-800-940-1150" [ref=e205] [cursor=pointer]':
+            - /url: tel:1-800-940-1150
+            - generic [ref=e206]: "Toll-free Number:"
+            - text: 1-800-940-1150
+          - generic [ref=e208]:
+            - heading "Office Hours:" [level=3] [ref=e209]
+            - paragraph [ref=e210]: Monday to Friday 8:30am - 4:30pm
+        - generic [ref=e211]:
+          - heading "Navigation" [level=3] [ref=e212]
+          - navigation "Footer navigation" [ref=e213]:
+            - list [ref=e214]:
+              - listitem [ref=e215]:
+                - link "Privacy Policy" [ref=e216] [cursor=pointer]:
+                  - /url: http://mnbc.local/privacy-policy/
+              - listitem [ref=e218]:
+                - link "Careers with MNBC" [ref=e219] [cursor=pointer]:
+                  - /url: http://mnbc.local/careers-with-mnbc/
+              - listitem [ref=e221]:
+                - link "Business Directory" [ref=e222] [cursor=pointer]:
+                  - /url: http://mnbc.local/business-directory/
+              - listitem [ref=e224]:
+                - link "Citizen's Hub" [ref=e225] [cursor=pointer]:
+                  - /url: https://metishub.ca/login
+              - listitem [ref=e227]:
+                - link "Métis Trading Post" [ref=e228] [cursor=pointer]:
+                  - /url: http://mnbc.local/trading-post/
+        - generic [ref=e230]:
+          - heading "Keep up to date with Métis Nation British Columbia" [level=2] [ref=e231]
+          - paragraph [ref=e232]: Join our newsletter today for MNBC’s latest news and events.
+          - generic "Subscribe" [ref=e233]:
+            - link "Subscribe" [ref=e234] [cursor=pointer]:
+              - /url: https://mnbc.us12.list-manage.com/subscribe?u=8d7d51f6e6d946ea400617dfa&id=283dd97778
+      - generic [ref=e235]: © 2026 Nation British Columbia.

@@ -1,0 +1,30 @@
+<h2>What should happen on a phone?</h2>
+<p class="subtitle">A seven-column calendar cannot keep readable titles at phone width without changing presentation.</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:16px;background:#f7f8fa;display:flex;justify-content:center">
+      <div style="width:250px;border:7px solid #24292f;border-radius:22px;padding:15px 10px;background:white;overflow:hidden">
+        <strong style="display:block;text-align:center;margin-bottom:10px">July 2026</strong>
+        <div style="width:530px">
+          <div style="display:grid;grid-template-columns:repeat(7,72px);gap:3px;font-size:10px;text-align:center"><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div></div>
+          <div style="display:grid;grid-template-columns:repeat(7,72px);gap:3px;margin-top:4px;height:75px"><div style="border:1px solid #d0d7de"></div><div style="border:1px solid #d0d7de"></div><div style="grid-column:3/7;background:#0969da;color:#fff;padding:6px;border-radius:5px;font-size:11px">Community Gathering →</div><div style="border:1px solid #d0d7de"></div></div>
+        </div>
+        <div style="font-size:10px;text-align:center;color:#57606a;margin-top:8px">← swipe horizontally →</div>
+      </div>
+    </div>
+    <div class="card-body"><h3>A. Scrollable month grid</h3><p>Keeps the desktop visual intact, but users must pan sideways to see the full week.</p></div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:16px;background:#f7f8fa;display:flex;justify-content:center">
+      <div style="width:250px;border:7px solid #24292f;border-radius:22px;padding:15px 12px;background:white">
+        <strong style="display:block;text-align:center;margin-bottom:12px">July 2026</strong>
+        <div style="border-left:4px solid #0969da;padding:8px 10px;margin-bottom:9px;background:#eef5ff"><strong style="font-size:12px">Community Gathering</strong><div style="font-size:10px;margin-top:3px">Jul 8, 6 PM – Jul 17, 2 PM</div></div>
+        <div style="border-left:4px solid #8250df;padding:8px 10px;margin-bottom:9px;background:#f6f0ff"><strong style="font-size:12px">Weekly Workshop</strong><div style="font-size:10px;margin-top:3px">Jul 11, 10 AM</div></div>
+        <div style="border-left:4px solid #1a7f37;padding:8px 10px;background:#edfff2"><strong style="font-size:12px">Community Lunch</strong><div style="font-size:10px;margin-top:3px">Jul 15, all day</div></div>
+      </div>
+    </div>
+    <div class="card-body"><h3>B. Mobile agenda list</h3><p>Switches to a readable chronological list while desktop retains the month grid and spanning bars.</p></div>
+  </div>
+</div>

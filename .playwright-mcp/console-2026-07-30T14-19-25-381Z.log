@@ -1,0 +1,6 @@
+[    1331ms] [LOG] JQMIGRATE: Migrate is installed, version 3.4.1 @ http://mnbc.local/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.4.1:1
+[    1343ms] [LOG] theme.js loaded. @ http://mnbc.local/wp-content/themes/MNBC/static/js/theme.js?ver=1785258380:81
+[    1347ms] [LOG] Sliding viewport not enabled @ http://mnbc.local/wp-content/themes/MNBC/static/js/modules/Navigation.js:419
+[   41030ms] [LOG] JQMIGRATE: Migrate is installed, version 3.4.1 @ http://mnbc.local/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.4.1:1
+[   41050ms] [LOG] theme.js loaded. @ http://mnbc.local/wp-content/themes/MNBC/static/js/theme.js?ver=1785258380:81
+[   41055ms] [LOG] Sliding viewport not enabled @ http://mnbc.local/wp-content/themes/MNBC/static/js/modules/Navigation.js:419

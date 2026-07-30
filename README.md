@@ -79,8 +79,9 @@ For example, one event can have a row starting Friday at 6:00 PM and ending Sund
 - Calendar navigation: query args `?aa_month=MM&aa_year=YYYY` change the visible month; “Today” jumps back to the current month. (`month`/`year` still work for legacy links.)
 - Archive and single templates show each occurrence as a formatted date or date/time range.
 - Single-event pages show a clickable Contact Email when a valid address is provided.
-- On desktop and tablet, the calendar is a traditional month grid. Multi-day occurrences render as bars spanning each week they cross, with the event title repeated on each weekly segment.
-- At `640px` wide and below, the calendar becomes a chronological agenda.
+- On desktop and tablet, visitors can switch between Calendar and List views. Calendar is the initial default; the visitor’s selection is saved in the browser and restored after month navigation and on later visits.
+- Calendar view uses a traditional month grid. Multi-day occurrences render as bars spanning each week they cross, with the event title repeated on each weekly segment.
+- At `640px` wide and below, the view switcher is hidden and the chronological List view is always used, regardless of any saved desktop preference.
 - Occurrences that cross into the visible month are included even when they start before it or end after it.
 - Calendar dates use the site timezone and the week layout respects Settings → General → “Start of week”.
 
@@ -100,14 +101,15 @@ Example: to override the archive, create `your-theme/aa-events/archive-event.php
 
 Page template in a theme: the “Events Calendar” page template also respects theme overrides at `your-theme/aa-events/template-calendar.php`.
 
-An existing `your-theme/aa-events/calendar.php` remains authoritative. It does not automatically acquire the plugin template’s week-spanning bars or mobile agenda markup. Theme authors can update overrides using `aa_events_get_occurrences()`, `aa_events_format_occurrence()`, and `aa_events_occurrence_time_markup()`. A CSS override must also account for any new calendar and agenda markup it adopts.
+An existing `your-theme/aa-events/calendar.php` remains authoritative. It does not automatically acquire the plugin template’s week-spanning bars, List markup, or desktop switcher. Theme authors can update overrides using `aa_events_get_occurrences()`, `aa_events_format_occurrence()`, and `aa_events_occurrence_time_markup()`. A CSS override must also cover any calendar, agenda, and switcher markup it adopts.
 
 ---
 
 ## Styling
 
 - Default CSS ships with the plugin and is enqueued automatically.
-- To replace it, add `your-theme/aa-events/aa-events.css`. If present, the theme stylesheet is loaded instead of the plugin’s.
+- To replace it, add `your-theme/aa-events/aa-events.css`. If present, the theme stylesheet is loaded instead of the plugin’s, even when the theme does not override any templates.
+- Existing theme stylesheet overrides must add styles for the calendar utility row, view switcher, selected and focus states, hidden inactive view panel, and the forced List view at `640px` wide and below.
 
 Note: The bundled CSS is intentionally minimal. Use the override to match your theme.
 

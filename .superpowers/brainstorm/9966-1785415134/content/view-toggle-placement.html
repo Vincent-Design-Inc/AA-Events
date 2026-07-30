@@ -1,0 +1,114 @@
+<style>
+	.calendar-preview {
+		background: #f4f4f4;
+		border: 1px solid #bbb;
+		color: #111;
+		font-family: Arial, sans-serif;
+		padding: 14px;
+	}
+	.utility-row,
+	.month-row {
+		align-items: center;
+		display: flex;
+		gap: 12px;
+		justify-content: space-between;
+	}
+	.month-row { margin: 16px 0 12px; }
+	.month-row strong { font-size: 20px; }
+	.today,
+	.segment span {
+		background: #ddd;
+		border: 1px solid #999;
+		border-radius: 4px;
+		display: inline-block;
+		font-size: 12px;
+		font-weight: 700;
+		padding: 7px 10px;
+	}
+	.segment {
+		display: inline-flex;
+	}
+	.segment span {
+		border-radius: 0;
+		margin-left: -1px;
+	}
+	.segment span:first-child {
+		border-radius: 4px 0 0 4px;
+		margin-left: 0;
+	}
+	.segment span:last-child { border-radius: 0 4px 4px 0; }
+	.segment .active {
+		background: #245b87;
+		color: #fff;
+	}
+	.grid {
+		display: grid;
+		grid-template-columns: repeat(7, 1fr);
+	}
+	.grid span {
+		background: #fafafa;
+		border: 1px solid #bbb;
+		height: 30px;
+		margin: -1px 0 0 -1px;
+	}
+	.below-row {
+		display: flex;
+		justify-content: flex-end;
+		margin-bottom: 10px;
+	}
+</style>
+
+<h2>Where should the desktop view switcher live?</h2>
+<p class="subtitle">Each option uses the same compact “Calendar / List” segmented control. Click the placement that feels most natural.</p>
+
+<div class="cards">
+	<div class="card" data-choice="utility-row" onclick="toggleSelect(this)">
+		<div class="card-image">
+			<div class="calendar-preview">
+				<div class="utility-row">
+					<span class="today">Today</span>
+					<span class="segment"><span class="active">Calendar</span><span>List</span></span>
+				</div>
+				<div class="month-row"><span>‹ Previous</span><strong>August 2026</strong><span>Next ›</span></div>
+				<div class="grid"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+			</div>
+		</div>
+		<div class="card-body">
+			<h3>A. Utility row</h3>
+			<p>Today on the left, view switcher on the right. Clear separation from month navigation.</p>
+		</div>
+	</div>
+
+	<div class="card" data-choice="month-row" onclick="toggleSelect(this)">
+		<div class="card-image">
+			<div class="calendar-preview">
+				<div class="utility-row"><span class="today">Today</span></div>
+				<div class="month-row">
+					<span>‹ Previous</span>
+					<strong>August 2026</strong>
+					<span style="display:flex;align-items:center;gap:10px"><span>Next ›</span><span class="segment"><span class="active">Calendar</span><span>List</span></span></span>
+				</div>
+				<div class="grid"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+			</div>
+		</div>
+		<div class="card-body">
+			<h3>B. Month navigation row</h3>
+			<p>Keeps all calendar controls together, but makes the navigation row busier.</p>
+		</div>
+	</div>
+
+	<div class="card" data-choice="above-content" onclick="toggleSelect(this)">
+		<div class="card-image">
+			<div class="calendar-preview">
+				<div class="utility-row"><span class="today">Today</span></div>
+				<div class="month-row"><span>‹ Previous</span><strong>August 2026</strong><span>Next ›</span></div>
+				<div class="below-row"><span class="segment"><span class="active">Calendar</span><span>List</span></span></div>
+				<div class="grid"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+			</div>
+		</div>
+		<div class="card-body">
+			<h3>C. Above the content</h3>
+			<p>Directly labels the view below, though it adds another row of vertical space.</p>
+		</div>
+	</div>
+</div>

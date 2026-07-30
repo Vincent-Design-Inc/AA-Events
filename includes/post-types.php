@@ -262,9 +262,14 @@ function events_admin_date_sort_orderby_sql( $posts_table, $order ) {
     $all_day_value         = "(SELECT aa_all_day.meta_value FROM {$postmeta_table} AS aa_all_day WHERE aa_all_day.post_id = aa_er.post_id AND aa_all_day.meta_key = CONCAT(LEFT(aa_er.meta_key, LENGTH(aa_er.meta_key) - 4), 'all_day') ORDER BY aa_all_day.meta_id ASC LIMIT 1)";
     $start_time_expression = "CASE WHEN LOWER(TRIM(COALESCE({$all_day_value}, ''))) IN ('1', 'true', 'yes', 'on') THEN STR_TO_DATE('00:00:00', '%H:%i:%s') WHEN {$start_time_value} REGEXP '^([01][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$' THEN CASE WHEN CHAR_LENGTH({$start_time_value}) = 5 THEN STR_TO_DATE({$start_time_value}, '%H:%i') ELSE STR_TO_DATE({$start_time_value}, '%H:%i:%s') END ELSE STR_TO_DATE('00:00:00', '%H:%i:%s') END";
     $repeater              = "(SELECT MIN(TIMESTAMP({$date_expression}, {$start_time_expression})) FROM {$postmeta_table} AS aa_er WHERE aa_er.post_id = {$posts_table}.ID AND aa_er.meta_key REGEXP '^event_dates_[0-9]+_date$')";
+    $legacy_repeater_date  = events_admin_date_meta_expression( 'aa_mr.meta_value' );
+    $legacy_time_value     = "(SELECT aa_mtime.meta_value FROM {$postmeta_table} AS aa_mtime WHERE aa_mtime.post_id = aa_mr.post_id AND aa_mtime.meta_key = CONCAT(LEFT(aa_mr.meta_key, LENGTH(aa_mr.meta_key) - 4), 'start_time') ORDER BY aa_mtime.meta_id ASC LIMIT 1)";
+    $legacy_all_day_value  = "(SELECT aa_mall.meta_value FROM {$postmeta_table} AS aa_mall WHERE aa_mall.post_id = aa_mr.post_id AND aa_mall.meta_key = CONCAT(LEFT(aa_mr.meta_key, LENGTH(aa_mr.meta_key) - 4), 'all_day') ORDER BY aa_mall.meta_id ASC LIMIT 1)";
+    $legacy_time_expression = "CASE WHEN LOWER(TRIM(COALESCE({$legacy_all_day_value}, ''))) IN ('1', 'true', 'yes', 'on') THEN STR_TO_DATE('00:00:00', '%H:%i:%s') WHEN {$legacy_time_value} REGEXP '^([01][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$' THEN CASE WHEN CHAR_LENGTH({$legacy_time_value}) = 5 THEN STR_TO_DATE({$legacy_time_value}, '%H:%i') ELSE STR_TO_DATE({$legacy_time_value}, '%H:%i:%s') END ELSE STR_TO_DATE('00:00:00', '%H:%i:%s') END";
+    $legacy_repeater       = "(SELECT MIN(TIMESTAMP({$legacy_repeater_date}, {$legacy_time_expression})) FROM {$postmeta_table} AS aa_mr WHERE aa_mr.post_id = {$posts_table}.ID AND aa_mr.meta_key REGEXP '^multiple_dates_[0-9]+_date$')";
     $legacy_datetime       = "(SELECT MIN({$datetime_expression}) FROM {$postmeta_table} AS aa_edt WHERE aa_edt.post_id = {$posts_table}.ID AND aa_edt.meta_key = 'event_datetime')";
     $legacy_date           = "(SELECT MIN({$legacy_expression}) FROM {$postmeta_table} AS aa_d WHERE aa_d.post_id = {$posts_table}.ID AND aa_d.meta_key = 'date')";
-    return "COALESCE({$canonical_expression}, {$repeater}, {$legacy_datetime}, {$legacy_date}, {$posts_table}.post_date) {$order}, {$posts_table}.post_date {$order}, {$posts_table}.ID {$order}";
+    return "COALESCE({$canonical_expression}, {$repeater}, {$legacy_repeater}, {$legacy_datetime}, {$legacy_date}, {$posts_table}.post_date) {$order}, {$posts_table}.post_date {$order}, {$posts_table}.ID {$order}";
 }
 
 /**

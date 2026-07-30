@@ -185,9 +185,15 @@ $calendar_url      = static function ( DateTimeImmutable $date ) use ( $calendar
 };
 ?>
 
-<div class="aa-events-calendar-wrap container">
-	<div class="aa-events-calendar-today-link">
-		<a href="<?php echo esc_url( $calendar_url( $today ) ); ?>" class="aa-events-calendar-today-btn"><?php esc_html_e( 'Today', 'aa-events' ); ?></a>
+<div class="aa-events-calendar-wrap container" data-aa-events-calendar>
+	<div class="aa-events-calendar-utility">
+		<div class="aa-events-calendar-today-link">
+			<a href="<?php echo esc_url( $calendar_url( $today ) ); ?>" class="aa-events-calendar-today-btn"><?php esc_html_e( 'Today', 'aa-events' ); ?></a>
+		</div>
+		<div class="aa-events-calendar-view-switcher" data-aa-events-view-switcher role="group" aria-label="<?php echo esc_attr( __( 'Calendar view', 'aa-events' ) ); ?>">
+			<button type="button" class="aa-events-calendar-view-button" data-aa-events-view-button="calendar" aria-pressed="true"><?php esc_html_e( 'Calendar', 'aa-events' ); ?></button>
+			<button type="button" class="aa-events-calendar-view-button" data-aa-events-view-button="list" aria-pressed="false"><?php esc_html_e( 'List', 'aa-events' ); ?></button>
+		</div>
 	</div>
 
 	<div class="aa-events-calendar-header">
@@ -198,7 +204,7 @@ $calendar_url      = static function ( DateTimeImmutable $date ) use ( $calendar
 		<a href="<?php echo esc_url( $calendar_url( $next ) ); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Go to %s', 'aa-events' ), wp_date( 'F Y', $next->getTimestamp(), $tz ) ) ); ?>"><?php esc_html_e( 'Next Month', 'aa-events' ); ?> &raquo;</a>
 	</div>
 
-	<div class="aa-events-calendar-desktop">
+	<div class="aa-events-calendar-desktop" data-aa-events-view-panel="calendar">
 		<div class="aa-events-calendar-grid" role="grid" aria-labelledby="<?php echo esc_attr( $heading_id ); ?>">
 			<div class="aa-events-calendar-weekdays" role="row">
 				<?php foreach ( $ordered_weekdays as $weekday ) : ?>
@@ -259,7 +265,7 @@ $calendar_url      = static function ( DateTimeImmutable $date ) use ( $calendar
 		</div>
 	</div>
 
-	<section class="aa-events-calendar-agenda" aria-labelledby="<?php echo esc_attr( $agenda_heading_id ); ?>">
+	<section class="aa-events-calendar-agenda" data-aa-events-view-panel="list" aria-labelledby="<?php echo esc_attr( $agenda_heading_id ); ?>">
 		<?php /* translators: %s: localized month and year. */ ?>
 		<h3 id="<?php echo esc_attr( $agenda_heading_id ); ?>"><?php echo esc_html( sprintf( __( 'Events for %s', 'aa-events' ), $month_label ) ); ?></h3>
 		<?php if ( $calendar_occurrences ) : ?>

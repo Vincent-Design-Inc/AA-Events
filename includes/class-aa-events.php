@@ -70,7 +70,7 @@ final class AA_Events {
 	}
 
 	/**
-	 * Enqueue styles.
+	 * Enqueue frontend assets.
 	 */
 	public function enqueue_styles() {
 		$theme_stylesheet = get_stylesheet_directory() . '/aa-events/aa-events.css';
@@ -90,6 +90,14 @@ final class AA_Events {
 				AA_EVENTS_VERSION
 			);
 		}
+
+		wp_enqueue_script(
+			'aa-events-calendar-view',
+			AA_EVENTS_PLUGIN_URL . 'assets/js/aa-events-calendar-view.js',
+			array(),
+			AA_EVENTS_VERSION,
+			true
+		);
 	}
 
 	/**
