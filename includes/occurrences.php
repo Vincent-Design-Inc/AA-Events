@@ -864,6 +864,50 @@ function aa_events_validate_occurrence_repeater( $valid, $value, $field, $input 
 }
 
 /**
+ * Add a positive month count to a date, anchoring on day-of-month.
+ *
+ * Jan 31 + 1 month = Feb 28 (or Feb 29 in a leap year), not Mar 3.
+ *
+ * @param DateTimeImmutable $date   Base date.
+ * @param int               $months Number of months to add (positive integer).
+ * @return DateTimeImmutable
+ */
+function aa_events_add_months( DateTimeImmutable $date, int $months ) {
+	$months = max( 0, $months );
+	$year   = (int) $date->format( 'Y' );
+	$month  = (int) $date->format( 'n' );
+	$day    = (int) $date->format( 'j' );
+
+	$total_months = ( $year * 12 + ( $month - 1 ) ) + $months;
+	$target_year  = intdiv( $total_months, 12 );
+	$target_month = ( $total_months % 12 ) + 1;
+
+	$days_in_target = (int) ( new DateTimeImmutable(
+		sprintf( '%04d-%02d-01', $target_year, $target_month ),
+		wp_timezone()
+	) )->format( 't' );
+	$candidate      = (object) array(
+		'year'  => $target_year,
+		'month' => $target_month,
+		'day'   => $day,
+	);
+	if ( $candidate->day > $days_in_target ) {
+		$candidate->day = $days_in_target;
+	}
+
+	$result = DateTimeImmutable::createFromFormat(
+		'!Y-m-d H:i:s',
+		sprintf( '%04d-%02d-%02d %s', $candidate->year, $candidate->month, $candidate->day, $date->format( 'H:i:s' ) ),
+		wp_timezone()
+	);
+	$errors = DateTimeImmutable::getLastErrors();
+	if ( false === $result || ( is_array( $errors ) && ( $errors['warning_count'] || $errors['error_count'] ) ) ) {
+		return $date;
+	}
+	return $result;
+}
+
+/**
  * Determine whether an occurrence was generated from a recurring row.
  *
  * @param array $occurrence Normalized occurrence.
