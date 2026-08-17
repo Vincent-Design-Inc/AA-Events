@@ -863,6 +863,16 @@ function aa_events_validate_occurrence_repeater( $valid, $value, $field, $input 
 	return true;
 }
 
+/**
+ * Determine whether an occurrence was generated from a recurring row.
+ *
+ * @param array $occurrence Normalized occurrence.
+ * @return bool
+ */
+function aa_events_is_recurring_occurrence( array $occurrence ) {
+	return isset( $occurrence['source'] ) && 'event_dates_recurring' === $occurrence['source'];
+}
+
 if ( function_exists( 'add_action' ) ) {
 	add_action( 'acf/save_post', 'aa_events_migrate_legacy_on_save', 20 );
 	add_action( 'acf/save_post', 'aa_events_sync_sort_start_on_save', 30 );
