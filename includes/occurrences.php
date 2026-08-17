@@ -1196,8 +1196,8 @@ function aa_events_is_recurring_occurrence( array $occurrence ) {
  * @return mixed
  */
 function aa_events_repeat_validate_interval( $valid, $value ) {
-	unset( $valid );
-	return null === aa_events_repeat_positive_integer( $value ) ? $value : (string) aa_events_repeat_positive_integer( $value );
+	$coerced = aa_events_repeat_positive_integer( $value );
+	return null === $coerced ? $valid : (string) $coerced;
 }
 
 /**
@@ -1208,8 +1208,8 @@ function aa_events_repeat_validate_interval( $valid, $value ) {
  * @return mixed
  */
 function aa_events_repeat_validate_end_count( $valid, $value ) {
-	unset( $valid );
-	return null === aa_events_repeat_positive_integer( $value ) ? $value : (string) aa_events_repeat_positive_integer( $value );
+	$coerced = aa_events_repeat_positive_integer( $value );
+	return null === $coerced ? $valid : (string) $coerced;
 }
 
 /**
@@ -1220,9 +1220,8 @@ function aa_events_repeat_validate_end_count( $valid, $value ) {
  * @return mixed
  */
 function aa_events_repeat_validate_end_date( $valid, $value ) {
-	unset( $valid );
 	$normalized = aa_events_repeat_end_date( $value );
-	return null === $normalized ? $value : $normalized;
+	return null === $normalized ? $valid : $normalized;
 }
 
 /**
@@ -1233,8 +1232,8 @@ function aa_events_repeat_validate_end_date( $valid, $value ) {
  * @return mixed
  */
 function aa_events_repeat_validate_unit( $valid, $value ) {
-	unset( $valid );
-	return null === aa_events_repeat_unit( $value ) ? $value : aa_events_repeat_unit( $value );
+	$coerced = aa_events_repeat_unit( $value );
+	return null === $coerced ? $valid : $coerced;
 }
 
 /**
@@ -1245,8 +1244,8 @@ function aa_events_repeat_validate_unit( $valid, $value ) {
  * @return mixed
  */
 function aa_events_repeat_validate_end_type( $valid, $value ) {
-	unset( $valid );
-	return null === aa_events_repeat_end_type( $value ) ? $value : aa_events_repeat_end_type( $value );
+	$coerced = aa_events_repeat_end_type( $value );
+	return null === $coerced ? $valid : $coerced;
 }
 
 /**
@@ -1257,8 +1256,8 @@ function aa_events_repeat_validate_end_type( $valid, $value ) {
  * @return mixed
  */
 function aa_events_repeat_validate_byweekday( $valid, $value ) {
-	unset( $valid );
-	return aa_events_repeat_byweekday( $value );
+	$coerced = aa_events_repeat_byweekday( $value );
+	return is_array( $value ) ? $coerced : $valid;
 }
 
 if ( function_exists( 'add_action' ) ) {
