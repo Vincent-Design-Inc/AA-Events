@@ -249,9 +249,10 @@ function aa_events_get_occurrences( $post_id ) {
 	if ( is_array( $rows ) && $rows ) {
 		foreach ( $rows as $row ) {
 			if ( is_array( $row ) ) {
-				$occurrence = aa_events_normalize_occurrence_row( $row, 'event_dates', $post_id );
-				if ( null !== $occurrence ) {
-					$occurrences[] = $occurrence;
+				foreach ( aa_events_expand_recurring_occurrence( $row, $post_id ) as $occurrence ) {
+					if ( is_array( $occurrence ) ) {
+						$occurrences[] = $occurrence;
+					}
 				}
 			}
 		}
@@ -863,6 +864,403 @@ function aa_events_validate_occurrence_repeater( $valid, $value, $field, $input 
 	return true;
 }
 
+/**
+ * Expand a single repeater row into a series of normalized occurrences.
+ *
+ * Returns an array whose first element is the in-place normalized row.
+ * Subsequent elements are children generated from the parent's pattern.
+ * Non-recurring rows and rows with invalid patterns return a single element.
+ *
+ * @param array $row     Raw repeater row (may include recurrence fields).
+ * @param int   $post_id Event post ID.
+ * @return array<int,array> Normalized occurrences.
+ */
+function aa_events_expand_recurring_occurrence( array $row, int $post_id = 0 ) {
+	$parent = aa_events_normalize_occurrence_row( $row, 'event_dates', $post_id );
+	if ( null === $parent ) {
+		return array();
+	}
+
+	if ( ! aa_events_occurrence_boolean( $row['repeat_enabled'] ?? false ) ) {
+		return array( $parent );
+	}
+
+	$interval = aa_events_repeat_positive_integer( $row['repeat_interval'] ?? 1 );
+	$unit     = aa_events_repeat_unit( $row['repeat_unit'] ?? 'week' );
+	$end_type = aa_events_repeat_end_type( $row['repeat_end_type'] ?? 'never' );
+	if ( null === $interval || null === $unit || null === $end_type ) {
+		return array( $parent );
+	}
+
+	$end_date  = 'on_date' === $end_type ? aa_events_repeat_end_date( $row['repeat_end_date'] ?? '' ) : null;
+	$end_count = 'after_count' === $end_type ? aa_events_repeat_positive_integer( $row['repeat_end_count'] ?? 12, 12 ) : null;
+	if ( 'on_date' === $end_type && ( null === $end_date || $end_date < $parent['start_date'] ) ) {
+		return array( $parent );
+	}
+	if ( 'after_count' === $end_type && null === $end_count ) {
+		return array( $parent );
+	}
+
+	$byweekday = aa_events_repeat_byweekday( $row['repeat_byweekday'] ?? '' );
+
+	$results      = array( $parent );
+	$safety_start = new DateTimeImmutable( $parent['start_date'] . ' 00:00:00', wp_timezone() );
+	$safety_end   = $safety_start->modify( '+5 years' )->format( 'Y-m-d' );
+	$cap          = 730;
+
+	$candidate_start_date = $parent['start_date'];
+	$step_index           = 0;
+
+	while ( count( $results ) < $cap ) {
+		++$step_index;
+		$candidate_start_date = aa_events_repeat_next_start_date( $parent['start_date'], $interval, $unit, $byweekday, $step_index );
+		if ( null === $candidate_start_date ) {
+			break;
+		}
+		$start_time = $parent['start_time'] ? $parent['start_time'] : '00:00:00';
+		$candidate_start = new DateTimeImmutable( $candidate_start_date . ' ' . $start_time, wp_timezone() );
+		if ( $candidate_start_date > $safety_end ) {
+			break;
+		}
+		if ( 'on_date' === $end_type && $candidate_start_date > $end_date ) {
+			break;
+		}
+
+		$child = aa_events_repeat_build_child( $parent, $candidate_start_date, $post_id );
+		if ( null === $child ) {
+			continue;
+		}
+		$results[] = $child;
+
+		if ( 'after_count' === $end_type && count( $results ) >= $end_count ) {
+			break;
+		}
+	}
+
+	return $results;
+}
+
+/**
+ * Coerce a value to a positive integer or null.
+ *
+ * @param mixed $value   Raw value.
+ * @param int   $default Default when value is empty.
+ * @return int|null
+ */
+function aa_events_repeat_positive_integer( $value, int $default = 1 ) {
+	if ( is_array( $value ) ) { return null; }
+	$string = aa_events_occurrence_string( $value );
+	if ( null === $string || '' === $string ) {
+		return $default > 0 ? $default : null;
+	}
+	if ( ! preg_match( '/^[0-9]+$/', $string ) ) {
+		return null;
+	}
+	$int = (int) $string;
+	return $int > 0 ? $int : null;
+}
+
+/**
+ * Coerce a repeat unit value to one of the supported values or null.
+ *
+ * @param mixed $value Raw value.
+ * @return string|null
+ */
+function aa_events_repeat_unit( $value ) {
+	$string = strtolower( (string) aa_events_occurrence_string( $value ) );
+	if ( in_array( $string, array( 'day', 'week', 'month', 'year' ), true ) ) {
+		return $string;
+	}
+	if ( '' === $string ) {
+		return 'week';
+	}
+	return null;
+}
+
+/**
+ * Coerce a repeat end type to one of the supported values or null.
+ *
+ * @param mixed $value Raw value.
+ * @return string|null
+ */
+function aa_events_repeat_end_type( $value ) {
+	$string = strtolower( (string) aa_events_occurrence_string( $value ) );
+	if ( in_array( $string, array( 'never', 'on_date', 'after_count' ), true ) ) {
+		return $string;
+	}
+	if ( '' === $string ) {
+		return 'never';
+	}
+	return null;
+}
+
+/**
+ * Parse a repeat end date in Y-m-d format.
+ *
+ * @param mixed $value Raw date.
+ * @return string|null
+ */
+function aa_events_repeat_end_date( $value ) {
+	return aa_events_parse_occurrence_date( $value );
+}
+
+/**
+ * Normalize a byweekday value to a list of lowercase tokens.
+ *
+ * @param mixed $value Raw value (string with comma separators or array).
+ * @return array<int,string>
+ */
+function aa_events_repeat_byweekday( $value ) {
+	$tokens = array();
+	if ( is_array( $value ) ) {
+		foreach ( $value as $item ) {
+			$token = strtolower( (string) aa_events_occurrence_string( $item ) );
+			if ( '' !== $token ) {
+				$tokens[] = $token;
+			}
+		}
+	} else {
+		$string = (string) aa_events_occurrence_string( $value );
+		foreach ( preg_split( '/[,\s]+/', $string ) as $token ) {
+			$token = strtolower( trim( $token ) );
+			if ( '' !== $token ) {
+				$tokens[] = $token;
+			}
+		}
+	}
+	$valid  = array( 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun' );
+	$tokens = array_values(
+		array_unique(
+			array_filter(
+				$tokens,
+				function ( $t ) use ( $valid ) {
+					return in_array( $t, $valid, true );
+				}
+			)
+		)
+	);
+	sort( $tokens );
+	return $tokens;
+}
+
+/**
+ * Compute the next start date for a recurring row.
+ *
+ * @param string $start_date Parent start date in Y-m-d.
+ * @param int    $interval   Positive integer.
+ * @param string $unit       One of day/week/month/year.
+ * @param array  $byweekday  Weekday tokens; only used when unit=week.
+ * @param int    $step_index 1-based step index (parent is step 0).
+ * @return string|null Y-m-d date or null when no further date is possible.
+ */
+function aa_events_repeat_next_start_date( $start_date, int $interval, string $unit, array $byweekday, int $step_index ) {
+	$base = new DateTimeImmutable( $start_date . ' 00:00:00', wp_timezone() );
+
+	if ( 'day' === $unit ) {
+		return $base->modify( '+' . ( $interval * $step_index ) . ' days' )->format( 'Y-m-d' );
+	}
+	if ( 'week' === $unit ) {
+		if ( ! $byweekday ) {
+			return $base->modify( '+' . ( $interval * 7 * $step_index ) . ' days' )->format( 'Y-m-d' );
+		}
+		$weekday_keys = array( 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun' );
+		$byweekday    = array_flip( $byweekday );
+		$day          = $base->modify( '+1 day' );
+		$horizon      = $day->modify( '+' . ( 730 * 7 ) . ' days' );
+		$count        = 0;
+		while ( $day <= $horizon ) {
+			$token = $weekday_keys[ ( (int) $day->format( 'N' ) ) - 1 ];
+			if ( isset( $byweekday[ $token ] ) ) {
+				++$count;
+				if ( $count === $step_index ) {
+					return $day->format( 'Y-m-d' );
+				}
+			}
+			$day = $day->modify( '+1 day' );
+		}
+		return null;
+	}
+	if ( 'month' === $unit ) {
+		return aa_events_add_months( $base, $interval * $step_index )->format( 'Y-m-d' );
+	}
+	if ( 'year' === $unit ) {
+		$year          = (int) $base->format( 'Y' ) + ( $interval * $step_index );
+		$month         = (int) $base->format( 'n' );
+		$day           = (int) $base->format( 'j' );
+		$days_in_target = (int) ( new DateTimeImmutable( sprintf( '%04d-%02d-01', $year, $month ), wp_timezone() ) )->format( 't' );
+		$effective_day  = $day > $days_in_target ? $days_in_target : $day;
+		return sprintf( '%04d-%02d-%02d', $year, $month, $effective_day );
+	}
+	return null;
+}
+
+/**
+ * Build a normalized child occurrence from a parent and a candidate date.
+ *
+ * @param array  $parent         Parent normalized occurrence.
+ * @param string $candidate_date Y-m-d candidate date.
+ * @param int    $post_id        Post ID.
+ * @return array|null
+ */
+function aa_events_repeat_build_child( array $parent, string $candidate_date, int $post_id ) {
+	$parent_end   = new DateTimeImmutable( $parent['end_date'] . ' 00:00:00', wp_timezone() );
+	$parent_start = new DateTimeImmutable( $parent['start_date'] . ' 00:00:00', wp_timezone() );
+	$diff         = $parent_start->diff( $parent_end );
+	$duration_days = (int) $diff->days;
+
+	$child_start_date = $candidate_date;
+	$child_end_date   = ( new DateTimeImmutable( $candidate_date . ' 00:00:00', wp_timezone() ) )
+		->modify( '+' . $duration_days . ' days' )
+		->format( 'Y-m-d' );
+
+	$child = array(
+		'post_id'        => $post_id,
+		'start_date'     => $child_start_date,
+		'start_time'     => $parent['start_time'],
+		'end_date'       => $child_end_date,
+		'end_time'       => $parent['end_time'],
+		'all_day'        => $parent['all_day'],
+		'source'         => 'event_dates_recurring',
+		'start_inferred' => false,
+		'end_inferred'   => $parent['end_inferred'],
+	);
+
+	if ( ! aa_events_occurrence_range_is_valid( $child['start_date'], $child['start_time'], $child['end_date'], $child['end_time'], $child['all_day'] ) ) {
+		return null;
+	}
+	return $child;
+}
+
+/**
+ * Add a positive month count to a date, anchoring on day-of-month.
+ *
+ * Jan 31 + 1 month = Feb 28 (or Feb 29 in a leap year), not Mar 3.
+ *
+ * @param DateTimeImmutable $date   Base date.
+ * @param int               $months Number of months to add (positive integer).
+ * @return DateTimeImmutable
+ */
+function aa_events_add_months( DateTimeImmutable $date, int $months ) {
+	$months = max( 0, $months );
+	$year   = (int) $date->format( 'Y' );
+	$month  = (int) $date->format( 'n' );
+	$day    = (int) $date->format( 'j' );
+
+	$total_months = ( $year * 12 + ( $month - 1 ) ) + $months;
+	$target_year  = intdiv( $total_months, 12 );
+	$target_month = ( $total_months % 12 ) + 1;
+
+	$days_in_target = (int) ( new DateTimeImmutable(
+		sprintf( '%04d-%02d-01', $target_year, $target_month ),
+		wp_timezone()
+	) )->format( 't' );
+	$candidate      = (object) array(
+		'year'  => $target_year,
+		'month' => $target_month,
+		'day'   => $day,
+	);
+	if ( $candidate->day > $days_in_target ) {
+		$candidate->day = $days_in_target;
+	}
+
+	$result = DateTimeImmutable::createFromFormat(
+		'!Y-m-d H:i:s',
+		sprintf( '%04d-%02d-%02d %s', $candidate->year, $candidate->month, $candidate->day, $date->format( 'H:i:s' ) ),
+		wp_timezone()
+	);
+	$errors = DateTimeImmutable::getLastErrors();
+	if ( false === $result || ( is_array( $errors ) && ( $errors['warning_count'] || $errors['error_count'] ) ) ) {
+		return $date;
+	}
+	return $result;
+}
+
+/**
+ * Determine whether an occurrence was generated from a recurring row.
+ *
+ * @param array $occurrence Normalized occurrence.
+ * @return bool
+ */
+function aa_events_is_recurring_occurrence( array $occurrence ) {
+	return isset( $occurrence['source'] ) && 'event_dates_recurring' === $occurrence['source'];
+}
+
+/**
+ * Coerce a repeat interval value through the ACF validation pipeline.
+ *
+ * Returns the original value when invalid so the row degrades to a single
+ * occurrence rather than blocking save.
+ *
+ * @param mixed $valid Existing validation state.
+ * @param mixed $value Submitted value.
+ * @return mixed
+ */
+function aa_events_repeat_validate_interval( $valid, $value ) {
+	unset( $valid );
+	return null === aa_events_repeat_positive_integer( $value ) ? $value : (string) aa_events_repeat_positive_integer( $value );
+}
+
+/**
+ * Coerce a repeat end count value through the ACF validation pipeline.
+ *
+ * @param mixed $valid Existing validation state.
+ * @param mixed $value Submitted value.
+ * @return mixed
+ */
+function aa_events_repeat_validate_end_count( $valid, $value ) {
+	unset( $valid );
+	return null === aa_events_repeat_positive_integer( $value ) ? $value : (string) aa_events_repeat_positive_integer( $value );
+}
+
+/**
+ * Coerce a repeat end date through the ACF validation pipeline.
+ *
+ * @param mixed $valid Existing validation state.
+ * @param mixed $value Submitted value.
+ * @return mixed
+ */
+function aa_events_repeat_validate_end_date( $valid, $value ) {
+	unset( $valid );
+	$normalized = aa_events_repeat_end_date( $value );
+	return null === $normalized ? $value : $normalized;
+}
+
+/**
+ * Coerce a repeat unit through the ACF validation pipeline.
+ *
+ * @param mixed $valid Existing validation state.
+ * @param mixed $value Submitted value.
+ * @return mixed
+ */
+function aa_events_repeat_validate_unit( $valid, $value ) {
+	unset( $valid );
+	return null === aa_events_repeat_unit( $value ) ? $value : aa_events_repeat_unit( $value );
+}
+
+/**
+ * Coerce a repeat end type through the ACF validation pipeline.
+ *
+ * @param mixed $valid Existing validation state.
+ * @param mixed $value Submitted value.
+ * @return mixed
+ */
+function aa_events_repeat_validate_end_type( $valid, $value ) {
+	unset( $valid );
+	return null === aa_events_repeat_end_type( $value ) ? $value : aa_events_repeat_end_type( $value );
+}
+
+/**
+ * Normalize a byweekday value through the ACF validation pipeline.
+ *
+ * @param mixed $valid Existing validation state.
+ * @param mixed $value Submitted value.
+ * @return mixed
+ */
+function aa_events_repeat_validate_byweekday( $valid, $value ) {
+	unset( $valid );
+	return aa_events_repeat_byweekday( $value );
+}
+
 if ( function_exists( 'add_action' ) ) {
 	add_action( 'acf/save_post', 'aa_events_migrate_legacy_on_save', 20 );
 	add_action( 'acf/save_post', 'aa_events_sync_sort_start_on_save', 30 );
@@ -876,4 +1274,10 @@ if ( function_exists( 'add_action' ) ) {
 if ( function_exists( 'add_filter' ) ) {
 	add_filter( 'acf/validate_value/key=field_61b0c7f0a3e8f', 'aa_events_validate_occurrence_repeater', 10, 4 );
 	add_filter( 'acf/validate_value/name=event_dates', 'aa_events_validate_occurrence_repeater', 10, 4 );
+	add_filter( 'acf/validate_value/name=repeat_interval', 'aa_events_repeat_validate_interval', 10, 4 );
+	add_filter( 'acf/validate_value/name=repeat_end_count', 'aa_events_repeat_validate_end_count', 10, 4 );
+	add_filter( 'acf/validate_value/name=repeat_end_date', 'aa_events_repeat_validate_end_date', 10, 4 );
+	add_filter( 'acf/validate_value/name=repeat_unit', 'aa_events_repeat_validate_unit', 10, 4 );
+	add_filter( 'acf/validate_value/name=repeat_end_type', 'aa_events_repeat_validate_end_type', 10, 4 );
+	add_filter( 'acf/validate_value/name=repeat_byweekday', 'aa_events_repeat_validate_byweekday', 10, 4 );
 }

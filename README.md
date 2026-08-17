@@ -57,6 +57,22 @@ For example, one event can have a row starting Friday at 6:00 PM and ending Sund
 
 **Backward compatibility:** Existing `event_dates` rows continue to work. The plugin also reads the optional legacy **Event Date & Time** (`event_datetime`) value and older standalone `date`/`start_time` fields when no occurrence rows are present. Saving a legacy-only event in the editor creates one equivalent occurrence row. No bulk migration is required, and later saves do not add duplicate rows.
 
+### Recurring Events
+
+Turn any **Occurrences** row into a recurring series by enabling **Repeat** at the bottom of the row. All fields are off by default, so existing events are unaffected.
+
+- **Every / Unit** — Step every N units. Unit is day, week, month, or year. Month and year units anchor on day-of-month, so January 31 + 1 month = February 28 (or 29 in a leap year), not March 3.
+- **Ends** — Choose when the series stops:
+  - **Never** — open-ended, capped internally at 5 years past the start date or 730 total occurrences, whichever fires first.
+  - **On date** — stops on or after the chosen end date.
+  - **After count** — stops after the chosen total occurrence count (the parent counts as the first).
+- **Weekdays** (Weekly unit only) — Pick one or more weekdays to use as anchors. Leave empty to step weekly from the start date's weekday.
+- The original row's start time, end time, and All Day flag carry into every generated occurrence. A multi-day parent produces multi-day children with the same span.
+- An occurrence generated from a recurring row is marked `Recurring` on the archive and single-event views.
+- Invalid patterns (zero interval, unknown unit, end date earlier than start, etc.) degrade to a single occurrence rather than blocking save.
+
+Recurrence metadata is stored on the row itself. The plugin expands the row on demand inside `aa_events_get_occurrences()`, so the archive, single event page, calendar, and admin sort all see the same expanded list with no extra configuration.
+
 ---
 
 ## Content Model
