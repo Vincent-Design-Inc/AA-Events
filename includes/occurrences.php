@@ -1062,18 +1062,33 @@ function aa_events_repeat_next_start_date( $start_date, int $interval, string $u
 		if ( ! $byweekday ) {
 			return $base->modify( '+' . ( $interval * 7 * $step_index ) . ' days' )->format( 'Y-m-d' );
 		}
-		$target_index = ( $interval * $step_index ) - 1;
-		$week_index   = intdiv( $target_index, count( $byweekday ) );
-		$slot_index   = $target_index % count( $byweekday );
-		$week_start   = $base->modify( '+' . ( $interval * 7 * $week_index ) . ' days' );
 		$weekday_keys = array( 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun' );
-		$day_of_week  = (int) $week_start->format( 'N' );
-		$target_token = $byweekday[ $slot_index ];
-		$target_day   = array_search( $target_token, $weekday_keys, true );
-		if ( false === $target_day ) { return null; }
-		$target_day += 1;
-		$diff = $target_day - $day_of_week;
-		return $week_start->modify( ( $diff >= 0 ? '+' : '' ) . $diff . ' days' )->format( 'Y-m-d' );
+		$week_offset  = $interval * 7 * ( $step_index - 1 );
+		$window       = $base->modify( '+' . ( $week_offset + 1 ) . ' days' );
+		while ( true ) {
+			$window_end  = $window->modify( '+6 days' );
+			$found       = null;
+			foreach ( $byweekday as $token ) {
+				$target_day = array_search( $token, $weekday_keys, true );
+				if ( false === $target_day ) { continue; }
+				$target_day += 1;
+				$day_of_week = (int) $window->format( 'N' );
+				$diff        = $target_day - $day_of_week;
+				if ( $diff < 0 ) {
+					$diff += 7;
+				}
+				$candidate   = $window->modify( '+' . $diff . ' days' );
+				if ( $candidate >= $window && $candidate > $base && $candidate <= $window_end ) {
+					$found = $candidate;
+					break;
+				}
+			}
+			if ( null !== $found ) {
+				return $found->format( 'Y-m-d' );
+			}
+			if ( $interval <= 0 ) { return null; }
+			$window = $window->modify( '+' . ( $interval * 7 ) . ' days' );
+		}
 	}
 	if ( 'month' === $unit ) {
 		return aa_events_add_months( $base, $interval * $step_index )->format( 'Y-m-d' );
