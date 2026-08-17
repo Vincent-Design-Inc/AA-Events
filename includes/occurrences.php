@@ -1188,16 +1188,20 @@ function aa_events_is_recurring_occurrence( array $occurrence ) {
 /**
  * Coerce a repeat interval value through the ACF validation pipeline.
  *
- * Returns the original value when invalid so the row degrades to a single
- * occurrence rather than blocking save.
+ * Returns $valid unchanged on every input so the row never blocks save.
+ * The expander reads the raw submitted value and tolerates any shape,
+ * so no coercion through ACF is needed. (Earlier versions of this
+ * function attempted to normalize the value, but ACF interprets any
+ * non-true return as an error message — see
+ * https://www.advancedcustomfields.com/resources/acf-validate_value/.)
  *
  * @param mixed $valid Existing validation state.
  * @param mixed $value Submitted value.
  * @return mixed
  */
 function aa_events_repeat_validate_interval( $valid, $value ) {
-	$coerced = aa_events_repeat_positive_integer( $value );
-	return null === $coerced ? $valid : (string) $coerced;
+	unset( $value );
+	return $valid;
 }
 
 /**
@@ -1208,8 +1212,8 @@ function aa_events_repeat_validate_interval( $valid, $value ) {
  * @return mixed
  */
 function aa_events_repeat_validate_end_count( $valid, $value ) {
-	$coerced = aa_events_repeat_positive_integer( $value );
-	return null === $coerced ? $valid : (string) $coerced;
+	unset( $value );
+	return $valid;
 }
 
 /**
@@ -1220,8 +1224,8 @@ function aa_events_repeat_validate_end_count( $valid, $value ) {
  * @return mixed
  */
 function aa_events_repeat_validate_end_date( $valid, $value ) {
-	$normalized = aa_events_repeat_end_date( $value );
-	return null === $normalized ? $valid : $normalized;
+	unset( $value );
+	return $valid;
 }
 
 /**
@@ -1232,8 +1236,8 @@ function aa_events_repeat_validate_end_date( $valid, $value ) {
  * @return mixed
  */
 function aa_events_repeat_validate_unit( $valid, $value ) {
-	$coerced = aa_events_repeat_unit( $value );
-	return null === $coerced ? $valid : $coerced;
+	unset( $value );
+	return $valid;
 }
 
 /**
@@ -1244,8 +1248,8 @@ function aa_events_repeat_validate_unit( $valid, $value ) {
  * @return mixed
  */
 function aa_events_repeat_validate_end_type( $valid, $value ) {
-	$coerced = aa_events_repeat_end_type( $value );
-	return null === $coerced ? $valid : $coerced;
+	unset( $value );
+	return $valid;
 }
 
 /**
@@ -1256,8 +1260,8 @@ function aa_events_repeat_validate_end_type( $valid, $value ) {
  * @return mixed
  */
 function aa_events_repeat_validate_byweekday( $valid, $value ) {
-	$coerced = aa_events_repeat_byweekday( $value );
-	return is_array( $value ) ? $coerced : $valid;
+	unset( $value );
+	return $valid;
 }
 
 if ( function_exists( 'add_action' ) ) {
