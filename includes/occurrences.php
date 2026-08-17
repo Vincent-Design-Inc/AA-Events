@@ -864,6 +864,269 @@ function aa_events_validate_occurrence_repeater( $valid, $value, $field, $input 
 }
 
 /**
+ * Expand a single repeater row into a series of normalized occurrences.
+ *
+ * Returns an array whose first element is the in-place normalized row.
+ * Subsequent elements are children generated from the parent's pattern.
+ * Non-recurring rows and rows with invalid patterns return a single element.
+ *
+ * @param array $row     Raw repeater row (may include recurrence fields).
+ * @param int   $post_id Event post ID.
+ * @return array<int,array> Normalized occurrences.
+ */
+function aa_events_expand_recurring_occurrence( array $row, int $post_id = 0 ) {
+	$parent = aa_events_normalize_occurrence_row( $row, 'event_dates', $post_id );
+	if ( null === $parent ) {
+		return array();
+	}
+
+	if ( ! aa_events_occurrence_boolean( $row['repeat_enabled'] ?? false ) ) {
+		return array( $parent );
+	}
+
+	$interval = aa_events_repeat_positive_integer( $row['repeat_interval'] ?? 1 );
+	$unit     = aa_events_repeat_unit( $row['repeat_unit'] ?? 'week' );
+	$end_type = aa_events_repeat_end_type( $row['repeat_end_type'] ?? 'never' );
+	if ( null === $interval || null === $unit || null === $end_type ) {
+		return array( $parent );
+	}
+
+	$end_date  = 'on_date' === $end_type ? aa_events_repeat_end_date( $row['repeat_end_date'] ?? '' ) : null;
+	$end_count = 'after_count' === $end_type ? aa_events_repeat_positive_integer( $row['repeat_end_count'] ?? 12, 12 ) : null;
+	if ( 'on_date' === $end_type && ( null === $end_date || $end_date < $parent['start_date'] ) ) {
+		return array( $parent );
+	}
+	if ( 'after_count' === $end_type && null === $end_count ) {
+		return array( $parent );
+	}
+
+	$byweekday = aa_events_repeat_byweekday( $row['repeat_byweekday'] ?? '' );
+
+	$results      = array( $parent );
+	$safety_start = new DateTimeImmutable( $parent['start_date'] . ' 00:00:00', wp_timezone() );
+	$safety_end   = $safety_start->modify( '+5 years' );
+	$cap          = 730;
+
+	$candidate_start_date = $parent['start_date'];
+	$step_index           = 0;
+
+	while ( count( $results ) < $cap ) {
+		++$step_index;
+		$candidate_start_date = aa_events_repeat_next_start_date( $parent['start_date'], $interval, $unit, $byweekday, $step_index );
+		if ( null === $candidate_start_date ) {
+			break;
+		}
+		$start_time = $parent['start_time'] ? $parent['start_time'] : '00:00:00';
+		$candidate_start = new DateTimeImmutable( $candidate_start_date . ' ' . $start_time, wp_timezone() );
+		if ( $candidate_start > $safety_end ) {
+			break;
+		}
+		if ( 'on_date' === $end_type && $candidate_start_date > $end_date ) {
+			break;
+		}
+
+		$child = aa_events_repeat_build_child( $parent, $candidate_start_date, $post_id );
+		if ( null === $child ) {
+			continue;
+		}
+		$results[] = $child;
+
+		if ( 'after_count' === $end_type && count( $results ) >= $end_count ) {
+			break;
+		}
+	}
+
+	return $results;
+}
+
+/**
+ * Coerce a value to a positive integer or null.
+ *
+ * @param mixed $value   Raw value.
+ * @param int   $default Default when value is empty.
+ * @return int|null
+ */
+function aa_events_repeat_positive_integer( $value, int $default = 1 ) {
+	if ( is_array( $value ) ) { return null; }
+	$string = aa_events_occurrence_string( $value );
+	if ( null === $string || '' === $string ) {
+		return $default > 0 ? $default : null;
+	}
+	if ( ! preg_match( '/^[0-9]+$/', $string ) ) {
+		return null;
+	}
+	$int = (int) $string;
+	return $int > 0 ? $int : null;
+}
+
+/**
+ * Coerce a repeat unit value to one of the supported values or null.
+ *
+ * @param mixed $value Raw value.
+ * @return string|null
+ */
+function aa_events_repeat_unit( $value ) {
+	$string = strtolower( (string) aa_events_occurrence_string( $value ) );
+	if ( in_array( $string, array( 'day', 'week', 'month', 'year' ), true ) ) {
+		return $string;
+	}
+	if ( '' === $string ) {
+		return 'week';
+	}
+	return null;
+}
+
+/**
+ * Coerce a repeat end type to one of the supported values or null.
+ *
+ * @param mixed $value Raw value.
+ * @return string|null
+ */
+function aa_events_repeat_end_type( $value ) {
+	$string = strtolower( (string) aa_events_occurrence_string( $value ) );
+	if ( in_array( $string, array( 'never', 'on_date', 'after_count' ), true ) ) {
+		return $string;
+	}
+	if ( '' === $string ) {
+		return 'never';
+	}
+	return null;
+}
+
+/**
+ * Parse a repeat end date in Y-m-d format.
+ *
+ * @param mixed $value Raw date.
+ * @return string|null
+ */
+function aa_events_repeat_end_date( $value ) {
+	return aa_events_parse_occurrence_date( $value );
+}
+
+/**
+ * Normalize a byweekday value to a list of lowercase tokens.
+ *
+ * @param mixed $value Raw value (string with comma separators or array).
+ * @return array<int,string>
+ */
+function aa_events_repeat_byweekday( $value ) {
+	$tokens = array();
+	if ( is_array( $value ) ) {
+		foreach ( $value as $item ) {
+			$token = strtolower( (string) aa_events_occurrence_string( $item ) );
+			if ( '' !== $token ) {
+				$tokens[] = $token;
+			}
+		}
+	} else {
+		$string = (string) aa_events_occurrence_string( $value );
+		foreach ( preg_split( '/[,\s]+/', $string ) as $token ) {
+			$token = strtolower( trim( $token ) );
+			if ( '' !== $token ) {
+				$tokens[] = $token;
+			}
+		}
+	}
+	$valid  = array( 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun' );
+	$tokens = array_values(
+		array_unique(
+			array_filter(
+				$tokens,
+				function ( $t ) use ( $valid ) {
+					return in_array( $t, $valid, true );
+				}
+			)
+		)
+	);
+	sort( $tokens );
+	return $tokens;
+}
+
+/**
+ * Compute the next start date for a recurring row.
+ *
+ * @param string $start_date Parent start date in Y-m-d.
+ * @param int    $interval   Positive integer.
+ * @param string $unit       One of day/week/month/year.
+ * @param array  $byweekday  Weekday tokens; only used when unit=week.
+ * @param int    $step_index 1-based step index (parent is step 0).
+ * @return string|null Y-m-d date or null when no further date is possible.
+ */
+function aa_events_repeat_next_start_date( $start_date, int $interval, string $unit, array $byweekday, int $step_index ) {
+	$base = new DateTimeImmutable( $start_date . ' 00:00:00', wp_timezone() );
+
+	if ( 'day' === $unit ) {
+		return $base->modify( '+' . ( $interval * $step_index ) . ' days' )->format( 'Y-m-d' );
+	}
+	if ( 'week' === $unit ) {
+		if ( ! $byweekday ) {
+			return $base->modify( '+' . ( $interval * 7 * $step_index ) . ' days' )->format( 'Y-m-d' );
+		}
+		$target_index = ( $interval * $step_index ) - 1;
+		$week_index   = intdiv( $target_index, count( $byweekday ) );
+		$slot_index   = $target_index % count( $byweekday );
+		$week_start   = $base->modify( '+' . ( $interval * 7 * $week_index ) . ' days' );
+		$weekday_keys = array( 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun' );
+		$day_of_week  = (int) $week_start->format( 'N' );
+		$target_token = $byweekday[ $slot_index ];
+		$target_day   = array_search( $target_token, $weekday_keys, true );
+		if ( false === $target_day ) { return null; }
+		$target_day += 1;
+		$diff = $target_day - $day_of_week;
+		return $week_start->modify( ( $diff >= 0 ? '+' : '' ) . $diff . ' days' )->format( 'Y-m-d' );
+	}
+	if ( 'month' === $unit ) {
+		return aa_events_add_months( $base, $interval * $step_index )->format( 'Y-m-d' );
+	}
+	if ( 'year' === $unit ) {
+		$year          = (int) $base->format( 'Y' ) + ( $interval * $step_index );
+		$month         = (int) $base->format( 'n' );
+		$day           = (int) $base->format( 'j' );
+		$days_in_target = (int) ( new DateTimeImmutable( sprintf( '%04d-%02d-01', $year, $month ), wp_timezone() ) )->format( 't' );
+		$effective_day  = $day > $days_in_target ? $days_in_target : $day;
+		return sprintf( '%04d-%02d-%02d', $year, $month, $effective_day );
+	}
+	return null;
+}
+
+/**
+ * Build a normalized child occurrence from a parent and a candidate date.
+ *
+ * @param array  $parent         Parent normalized occurrence.
+ * @param string $candidate_date Y-m-d candidate date.
+ * @param int    $post_id        Post ID.
+ * @return array|null
+ */
+function aa_events_repeat_build_child( array $parent, string $candidate_date, int $post_id ) {
+	$parent_end   = new DateTimeImmutable( $parent['end_date'] . ' 00:00:00', wp_timezone() );
+	$parent_start = new DateTimeImmutable( $parent['start_date'] . ' 00:00:00', wp_timezone() );
+	$diff         = $parent_start->diff( $parent_end );
+	$duration_days = (int) $diff->days;
+
+	$child_start_date = $candidate_date;
+	$child_end_date   = ( new DateTimeImmutable( $candidate_date . ' 00:00:00', wp_timezone() ) )
+		->modify( '+' . $duration_days . ' days' )
+		->format( 'Y-m-d' );
+
+	$child = array(
+		'post_id'        => $post_id,
+		'start_date'     => $child_start_date,
+		'start_time'     => $parent['start_time'],
+		'end_date'       => $child_end_date,
+		'end_time'       => $parent['end_time'],
+		'all_day'        => $parent['all_day'],
+		'source'         => 'event_dates_recurring',
+		'start_inferred' => false,
+		'end_inferred'   => $parent['end_inferred'],
+	);
+
+	if ( ! aa_events_occurrence_range_is_valid( $child['start_date'], $child['start_time'], $child['end_date'], $child['end_time'], $child['all_day'] ) ) {
+		return null;
+	}
+	return $child;
+}
+
+/**
  * Add a positive month count to a date, anchoring on day-of-month.
  *
  * Jan 31 + 1 month = Feb 28 (or Feb 29 in a leap year), not Mar 3.
