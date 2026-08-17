@@ -1063,32 +1063,21 @@ function aa_events_repeat_next_start_date( $start_date, int $interval, string $u
 			return $base->modify( '+' . ( $interval * 7 * $step_index ) . ' days' )->format( 'Y-m-d' );
 		}
 		$weekday_keys = array( 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun' );
-		$week_offset  = $interval * 7 * ( $step_index - 1 );
-		$window       = $base->modify( '+' . ( $week_offset + 1 ) . ' days' );
-		while ( true ) {
-			$window_end  = $window->modify( '+6 days' );
-			$found       = null;
-			foreach ( $byweekday as $token ) {
-				$target_day = array_search( $token, $weekday_keys, true );
-				if ( false === $target_day ) { continue; }
-				$target_day += 1;
-				$day_of_week = (int) $window->format( 'N' );
-				$diff        = $target_day - $day_of_week;
-				if ( $diff < 0 ) {
-					$diff += 7;
-				}
-				$candidate   = $window->modify( '+' . $diff . ' days' );
-				if ( $candidate >= $window && $candidate > $base && $candidate <= $window_end ) {
-					$found = $candidate;
-					break;
+		$byweekday    = array_flip( $byweekday );
+		$day          = $base->modify( '+1 day' );
+		$horizon      = $day->modify( '+' . ( 730 * 7 ) . ' days' );
+		$count        = 0;
+		while ( $day <= $horizon ) {
+			$token = $weekday_keys[ ( (int) $day->format( 'N' ) ) - 1 ];
+			if ( isset( $byweekday[ $token ] ) ) {
+				++$count;
+				if ( $count === $step_index ) {
+					return $day->format( 'Y-m-d' );
 				}
 			}
-			if ( null !== $found ) {
-				return $found->format( 'Y-m-d' );
-			}
-			if ( $interval <= 0 ) { return null; }
-			$window = $window->modify( '+' . ( $interval * 7 ) . ' days' );
+			$day = $day->modify( '+1 day' );
 		}
+		return null;
 	}
 	if ( 'month' === $unit ) {
 		return aa_events_add_months( $base, $interval * $step_index )->format( 'Y-m-d' );
