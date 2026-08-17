@@ -249,9 +249,10 @@ function aa_events_get_occurrences( $post_id ) {
 	if ( is_array( $rows ) && $rows ) {
 		foreach ( $rows as $row ) {
 			if ( is_array( $row ) ) {
-				$occurrence = aa_events_normalize_occurrence_row( $row, 'event_dates', $post_id );
-				if ( null !== $occurrence ) {
-					$occurrences[] = $occurrence;
+				foreach ( aa_events_expand_recurring_occurrence( $row, $post_id ) as $occurrence ) {
+					if ( is_array( $occurrence ) ) {
+						$occurrences[] = $occurrence;
+					}
 				}
 			}
 		}
