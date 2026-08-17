@@ -43,6 +43,9 @@ get_header(); ?>
 
                                 foreach ( $occurrences as $index => $occurrence ) {
 									echo aa_events_occurrence_time_markup( $occurrence ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Helper returns escaped markup.
+									if ( aa_events_is_recurring_occurrence( $occurrence ) ) {
+										echo ' <span class="aa-event-recurring-badge">' . esc_html__( 'Recurring', 'aa-events' ) . '</span>';
+									}
 									echo ( $index < count( $occurrences ) - 1 ) ? '<br />' : '';
                                 }
                                 ?>

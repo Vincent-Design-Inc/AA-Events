@@ -347,3 +347,16 @@
 		}
 	}
 }
+
+/* Recurring badge shown next to occurrences generated from a recurring row. */
+.aa-event-recurring-badge {
+	display: inline-block;
+	margin-left: 0.25em;
+	padding: 0 0.4em;
+	border: 1px solid currentColor;
+	border-radius: 0.25em;
+	font-size: 0.75em;
+	font-weight: 600;
+	line-height: 1.4;
+	vertical-align: middle;
+}
