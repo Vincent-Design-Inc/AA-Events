@@ -1185,6 +1185,82 @@ function aa_events_is_recurring_occurrence( array $occurrence ) {
 	return isset( $occurrence['source'] ) && 'event_dates_recurring' === $occurrence['source'];
 }
 
+/**
+ * Coerce a repeat interval value through the ACF validation pipeline.
+ *
+ * Returns the original value when invalid so the row degrades to a single
+ * occurrence rather than blocking save.
+ *
+ * @param mixed $valid Existing validation state.
+ * @param mixed $value Submitted value.
+ * @return mixed
+ */
+function aa_events_repeat_validate_interval( $valid, $value ) {
+	unset( $valid );
+	return null === aa_events_repeat_positive_integer( $value ) ? $value : (string) aa_events_repeat_positive_integer( $value );
+}
+
+/**
+ * Coerce a repeat end count value through the ACF validation pipeline.
+ *
+ * @param mixed $valid Existing validation state.
+ * @param mixed $value Submitted value.
+ * @return mixed
+ */
+function aa_events_repeat_validate_end_count( $valid, $value ) {
+	unset( $valid );
+	return null === aa_events_repeat_positive_integer( $value ) ? $value : (string) aa_events_repeat_positive_integer( $value );
+}
+
+/**
+ * Coerce a repeat end date through the ACF validation pipeline.
+ *
+ * @param mixed $valid Existing validation state.
+ * @param mixed $value Submitted value.
+ * @return mixed
+ */
+function aa_events_repeat_validate_end_date( $valid, $value ) {
+	unset( $valid );
+	$normalized = aa_events_repeat_end_date( $value );
+	return null === $normalized ? $value : $normalized;
+}
+
+/**
+ * Coerce a repeat unit through the ACF validation pipeline.
+ *
+ * @param mixed $valid Existing validation state.
+ * @param mixed $value Submitted value.
+ * @return mixed
+ */
+function aa_events_repeat_validate_unit( $valid, $value ) {
+	unset( $valid );
+	return null === aa_events_repeat_unit( $value ) ? $value : aa_events_repeat_unit( $value );
+}
+
+/**
+ * Coerce a repeat end type through the ACF validation pipeline.
+ *
+ * @param mixed $valid Existing validation state.
+ * @param mixed $value Submitted value.
+ * @return mixed
+ */
+function aa_events_repeat_validate_end_type( $valid, $value ) {
+	unset( $valid );
+	return null === aa_events_repeat_end_type( $value ) ? $value : aa_events_repeat_end_type( $value );
+}
+
+/**
+ * Normalize a byweekday value through the ACF validation pipeline.
+ *
+ * @param mixed $valid Existing validation state.
+ * @param mixed $value Submitted value.
+ * @return mixed
+ */
+function aa_events_repeat_validate_byweekday( $valid, $value ) {
+	unset( $valid );
+	return aa_events_repeat_byweekday( $value );
+}
+
 if ( function_exists( 'add_action' ) ) {
 	add_action( 'acf/save_post', 'aa_events_migrate_legacy_on_save', 20 );
 	add_action( 'acf/save_post', 'aa_events_sync_sort_start_on_save', 30 );
@@ -1198,4 +1274,10 @@ if ( function_exists( 'add_action' ) ) {
 if ( function_exists( 'add_filter' ) ) {
 	add_filter( 'acf/validate_value/key=field_61b0c7f0a3e8f', 'aa_events_validate_occurrence_repeater', 10, 4 );
 	add_filter( 'acf/validate_value/name=event_dates', 'aa_events_validate_occurrence_repeater', 10, 4 );
+	add_filter( 'acf/validate_value/name=repeat_interval', 'aa_events_repeat_validate_interval', 10, 4 );
+	add_filter( 'acf/validate_value/name=repeat_end_count', 'aa_events_repeat_validate_end_count', 10, 4 );
+	add_filter( 'acf/validate_value/name=repeat_end_date', 'aa_events_repeat_validate_end_date', 10, 4 );
+	add_filter( 'acf/validate_value/name=repeat_unit', 'aa_events_repeat_validate_unit', 10, 4 );
+	add_filter( 'acf/validate_value/name=repeat_end_type', 'aa_events_repeat_validate_end_type', 10, 4 );
+	add_filter( 'acf/validate_value/name=repeat_byweekday', 'aa_events_repeat_validate_byweekday', 10, 4 );
 }
