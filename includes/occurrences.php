@@ -904,7 +904,7 @@ function aa_events_expand_recurring_occurrence( array $row, int $post_id = 0 ) {
 
 	$results      = array( $parent );
 	$safety_start = new DateTimeImmutable( $parent['start_date'] . ' 00:00:00', wp_timezone() );
-	$safety_end   = $safety_start->modify( '+5 years' );
+	$safety_end   = $safety_start->modify( '+5 years' )->format( 'Y-m-d' );
 	$cap          = 730;
 
 	$candidate_start_date = $parent['start_date'];
@@ -918,7 +918,7 @@ function aa_events_expand_recurring_occurrence( array $row, int $post_id = 0 ) {
 		}
 		$start_time = $parent['start_time'] ? $parent['start_time'] : '00:00:00';
 		$candidate_start = new DateTimeImmutable( $candidate_start_date . ' ' . $start_time, wp_timezone() );
-		if ( $candidate_start > $safety_end ) {
+		if ( $candidate_start_date > $safety_end ) {
 			break;
 		}
 		if ( 'on_date' === $end_type && $candidate_start_date > $end_date ) {
