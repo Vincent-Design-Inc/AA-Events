@@ -329,6 +329,7 @@ $day_url       = static function ( DateTimeImmutable $date ) use ( $calendar_bas
 		</div>
 		<div class="aa-events-calendar-view-switcher" data-aa-events-view-switcher role="group" aria-label="<?php echo esc_attr( __( 'Calendar view', 'aa-events' ) ); ?>">
 			<button type="button" class="aa-events-calendar-view-button" data-aa-events-view-button="calendar" aria-pressed="true"><?php esc_html_e( 'Calendar', 'aa-events' ); ?></button>
+			<button type="button" class="aa-events-calendar-view-track" data-aa-events-view-toggle aria-label="<?php echo esc_attr( __( 'List view', 'aa-events' ) ); ?>" aria-pressed="false"></button>
 			<button type="button" class="aa-events-calendar-view-button" data-aa-events-view-button="list" aria-pressed="false"><?php esc_html_e( 'List', 'aa-events' ); ?></button>
 		</div>
 	</div>

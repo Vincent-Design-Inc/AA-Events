@@ -150,6 +150,8 @@
   }
 
   function getInstance(root) {
+    var switcher = root.querySelector('[data-aa-events-view-switcher]');
+    var toggleButton = root.querySelector('[data-aa-events-view-toggle]');
     var calendarButton = root.querySelector(
       '[data-aa-events-view-button="calendar"]'
     );
@@ -165,6 +167,8 @@
 
     return {
       root: root,
+      switcher: switcher,
+      toggleButton: toggleButton,
       calendarButton: calendarButton,
       listButton: listButton,
       calendarPanel: calendarPanel,
@@ -203,6 +207,16 @@
           'is-list-view',
           !mobile && preference === LIST_VIEW
         );
+        calendar.root.classList.toggle(
+          'is-calendar-view',
+          preference === CALENDAR_VIEW
+        );
+        if (calendar.switcher) {
+          calendar.switcher.classList.toggle(
+            'is-list-view-active',
+            !mobile && preference === LIST_VIEW
+          );
+        }
         calendar.calendarPanel.hidden = showList;
         calendar.listPanel.hidden = !showList;
         calendar.calendarButton.setAttribute(
@@ -213,6 +227,12 @@
           'aria-pressed',
           String(preference === LIST_VIEW)
         );
+        if (calendar.toggleButton) {
+          calendar.toggleButton.setAttribute(
+            'aria-pressed',
+            String(preference === LIST_VIEW)
+          );
+        }
       }
     }
 
@@ -234,6 +254,11 @@
         calendar.listButton.addEventListener('click', function () {
           selectView(LIST_VIEW);
         });
+        if (calendar.toggleButton) {
+          calendar.toggleButton.addEventListener('click', function () {
+            selectView(preference === LIST_VIEW ? CALENDAR_VIEW : LIST_VIEW);
+          });
+        }
       })(instances[buttonIndex]);
     }
 
