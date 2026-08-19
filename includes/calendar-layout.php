@@ -258,3 +258,49 @@ function aa_events_sort_calendar_occurrences( array $occurrences ) {
 
 	return array_column( $decorated, 'occurrence' );
 }
+
+/**
+ * Collect published event occurrences that intersect a single calendar day.
+ *
+ * Reuses the existing `aa_events_get_occurrences()` helper so legacy and
+ * recurrence-expanded rows surface alongside the canonical occurrences.
+ *
+ * @param DateTimeImmutable $day Midnight on the requested calendar day.
+ * @return array List of normalized occurrence arrays, each augmented with
+ *               `post_id`, `title`, and `permalink`.
+ */
+function aa_events_calendar_day_occurrences( DateTimeImmutable $day ) {
+	if ( ! function_exists( 'aa_events_get_occurrences' ) ) {
+		return array();
+	}
+
+	$events = new WP_Query(
+		array(
+			'post_type'              => 'event',
+			'posts_per_page'         => -1,
+			'post_status'            => 'publish',
+			'fields'                 => 'ids',
+			'no_found_rows'          => true,
+			'update_post_meta_cache' => true,
+			'update_post_term_cache' => false,
+		)
+	);
+
+	$occurrences = array();
+	foreach ( $events->posts as $event_id ) {
+		$event_id      = (int) $event_id;
+		$event_title   = get_the_title( $event_id );
+		$event_permalink = get_permalink( $event_id );
+		foreach ( aa_events_get_occurrences( $event_id ) as $occurrence ) {
+			if ( ! is_array( $occurrence ) || ! aa_events_occurrence_intersects_range( $occurrence, $day, $day ) ) {
+				continue;
+			}
+			$occurrence['post_id']   = $event_id;
+			$occurrence['title']     = $event_title;
+			$occurrence['permalink'] = $event_permalink;
+			$occurrences[]           = $occurrence;
+		}
+	}
+
+	return aa_events_sort_calendar_occurrences( $occurrences );
+}

@@ -172,6 +172,7 @@ final class AA_Events {
 	public function register_calendar_query_vars( $vars ) {
 		$vars[] = 'aa_month';
 		$vars[] = 'aa_year';
+		$vars[] = 'aa_day';
 
 		return $vars;
 	}

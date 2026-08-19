@@ -11,6 +11,31 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $month_param = 'aa_month';
 $year_param  = 'aa_year';
+$day_param   = 'aa_day';
+
+/**
+ * Read a query value with validation, preferring $_GET so test harnesses
+ * (which cannot drive filter_input() under CLI) can simulate requests.
+ *
+ * @param string          $key        Query key.
+ * @param int             $filter     filter_input() filter.
+ * @param array           $options    filter_input() options.
+ * @param callable|string $fallback   Either a callable applied to the raw
+ *                                    string from $_GET, or a literal value
+ *                                    returned when the key is absent.
+ * @return mixed|null
+ */
+$aa_events_query_value = static function ( $key, $filter, $options, $fallback = '' ) {
+	$raw = $_GET[ $key ] ?? null;
+	if ( ! is_string( $raw ) || '' === $raw ) {
+		return null;
+	}
+	if ( is_callable( $fallback ) ) {
+		return $fallback( $raw );
+	}
+	return $fallback;
+};
+
 $month_input = filter_input(
 	INPUT_GET,
 	$month_param,
@@ -23,6 +48,22 @@ $month_input = filter_input(
 	)
 );
 if ( false === $month_input || null === $month_input ) {
+	$month_input = $aa_events_query_value(
+		$month_param,
+		FILTER_VALIDATE_INT,
+		array(
+			'options' => array(
+				'min_range' => 1,
+				'max_range' => 12,
+			),
+		),
+		static function ( $raw ) {
+			$value = filter_var( $raw, FILTER_VALIDATE_INT, array( 'options' => array( 'min_range' => 1, 'max_range' => 12 ) ) );
+			return false === $value ? null : $value;
+		}
+	);
+}
+if ( false === $month_input || null === $month_input ) {
 	$month_input = filter_input(
 		INPUT_GET,
 		'month',
@@ -33,6 +74,22 @@ if ( false === $month_input || null === $month_input ) {
 				'max_range' => 12,
 			),
 		)
+	);
+}
+if ( false === $month_input || null === $month_input ) {
+	$month_input = $aa_events_query_value(
+		'month',
+		FILTER_VALIDATE_INT,
+		array(
+			'options' => array(
+				'min_range' => 1,
+				'max_range' => 12,
+			),
+		),
+		static function ( $raw ) {
+			$value = filter_var( $raw, FILTER_VALIDATE_INT, array( 'options' => array( 'min_range' => 1, 'max_range' => 12 ) ) );
+			return false === $value ? null : $value;
+		}
 	);
 }
 $year_input = filter_input(
@@ -47,6 +104,22 @@ $year_input = filter_input(
 	)
 );
 if ( false === $year_input || null === $year_input ) {
+	$year_input = $aa_events_query_value(
+		$year_param,
+		FILTER_VALIDATE_INT,
+		array(
+			'options' => array(
+				'min_range' => 1970,
+				'max_range' => 2200,
+			),
+		),
+		static function ( $raw ) {
+			$value = filter_var( $raw, FILTER_VALIDATE_INT, array( 'options' => array( 'min_range' => 1970, 'max_range' => 2200 ) ) );
+			return false === $value ? null : $value;
+		}
+	);
+}
+if ( false === $year_input || null === $year_input ) {
 	$year_input = filter_input(
 		INPUT_GET,
 		'year',
@@ -58,6 +131,58 @@ if ( false === $year_input || null === $year_input ) {
 			),
 		)
 	);
+}
+if ( false === $year_input || null === $year_input ) {
+	$year_input = $aa_events_query_value(
+		'year',
+		FILTER_VALIDATE_INT,
+		array(
+			'options' => array(
+				'min_range' => 1970,
+				'max_range' => 2200,
+			),
+		),
+		static function ( $raw ) {
+			$value = filter_var( $raw, FILTER_VALIDATE_INT, array( 'options' => array( 'min_range' => 1970, 'max_range' => 2200 ) ) );
+			return false === $value ? null : $value;
+		}
+	);
+}
+
+$day_input = filter_input(
+	INPUT_GET,
+	$day_param,
+	FILTER_VALIDATE_REGEXP,
+	array(
+		'options' => array(
+			'regexp' => '/^\d{4}-\d{2}-\d{2}$/',
+		),
+	)
+);
+if ( null === $day_input || false === $day_input ) {
+	$day_input = $aa_events_query_value(
+		$day_param,
+		FILTER_VALIDATE_REGEXP,
+		array(
+			'options' => array(
+				'regexp' => '/^\d{4}-\d{2}-\d{2}$/',
+			),
+		),
+		static function ( $raw ) {
+			return 1 === preg_match( '/^\d{4}-\d{2}-\d{2}$/', $raw ) ? $raw : null;
+		}
+	);
+}
+if ( is_string( $day_input ) ) {
+	$parsed_day = DateTimeImmutable::createFromFormat( '!Y-m-d', $day_input, wp_timezone() );
+	$day_errors = DateTimeImmutable::getLastErrors();
+	if ( false === $parsed_day || ( is_array( $day_errors ) && ( $day_errors['warning_count'] || $day_errors['error_count'] ) ) || $parsed_day->format( 'Y-m-d' ) !== $day_input ) {
+		$day_input = null;
+	} else {
+		$day_input = $parsed_day;
+	}
+} else {
+	$day_input = null;
 }
 
 $cur_month = ( false !== $month_input && null !== $month_input ) ? (int) $month_input : (int) wp_date( 'n' );
@@ -149,7 +274,53 @@ $calendar_url      = static function ( DateTimeImmutable $date ) use ( $calendar
 		$calendar_base_url
 	);
 };
+$day_url       = static function ( DateTimeImmutable $date ) use ( $calendar_base_url, $month_param, $year_param, $day_param ) {
+	return add_query_arg(
+		array(
+			$day_param   => $date->format( 'Y-m-d' ),
+			$month_param => (int) $date->format( 'n' ),
+			$year_param  => (int) $date->format( 'Y' ),
+		),
+		$calendar_base_url
+	);
+};
 ?>
+
+<?php if ( $day_input instanceof DateTimeImmutable ) : ?>
+	<?php
+	$day_view_heading_id  = wp_unique_id( 'aa-events-calendar-day-heading-' );
+	$day_view_prev        = $day_input->modify( '-1 day' );
+	$day_view_next        = $day_input->modify( '+1 day' );
+	$day_view_label       = wp_date( 'l, F j, Y', $day_input->getTimestamp(), $tz );
+	$day_view_back_url    = $calendar_url( $day_input );
+	$day_view_occurrences = function_exists( 'aa_events_calendar_day_occurrences' ) ? aa_events_calendar_day_occurrences( $day_input ) : array();
+	?>
+	<div class="aa-events-calendar-wrap container" data-aa-events-calendar>
+		<div class="aa-events-calendar-utility">
+			<div class="aa-events-calendar-today-link">
+				<a href="<?php echo esc_url( $calendar_url( $today ) ); ?>" class="aa-events-calendar-today-btn"><?php esc_html_e( 'Today', 'aa-events' ); ?></a>
+			</div>
+		</div>
+		<section class="aa-events-calendar-day-view" aria-labelledby="<?php echo esc_attr( $day_view_heading_id ); ?>" data-aa-events-day-view="<?php echo esc_attr( $day_input->format( 'Y-m-d' ) ); ?>">
+			<h2 id="<?php echo esc_attr( $day_view_heading_id ); ?>"><?php echo esc_html( $day_view_label ); ?></h2>
+			<nav class="aa-events-calendar-day-nav" aria-label="<?php echo esc_attr( __( 'Day navigation', 'aa-events' ) ); ?>">
+				<a class="aa-events-calendar-day-prev" href="<?php echo esc_url( $day_url( $day_view_prev ) ); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Go to %s', 'aa-events' ), wp_date( 'l, F j, Y', $day_view_prev->getTimestamp(), $tz ) ) ); ?>" rel="prev">&laquo; <?php esc_html_e( 'Previous day', 'aa-events' ); ?></a>
+				<a class="aa-events-calendar-day-back" href="<?php echo esc_url( $day_view_back_url ); ?>"><?php esc_html_e( 'Back to calendar', 'aa-events' ); ?></a>
+				<a class="aa-events-calendar-day-next" href="<?php echo esc_url( $day_url( $day_view_next ) ); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Go to %s', 'aa-events' ), wp_date( 'l, F j, Y', $day_view_next->getTimestamp(), $tz ) ) ); ?>" rel="next"><?php esc_html_e( 'Next day', 'aa-events' ); ?> &raquo;</a>
+			</nav>
+			<?php if ( $day_view_occurrences ) : ?>
+				<ol class="aa-events-calendar-day-list">
+					<?php foreach ( $day_view_occurrences as $day_occurrence ) : ?>
+						<li class="aa-events-calendar-day-item"><a href="<?php echo esc_url( $day_occurrence['permalink'] ); ?>"><span class="aa-events-calendar-day-item-title"><?php echo esc_html( $day_occurrence['title'] ); ?></span></a> <?php echo aa_events_occurrence_time_markup( $day_occurrence ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Helper returns escaped markup. ?></li>
+					<?php endforeach; ?>
+				</ol>
+			<?php else : ?>
+				<p class="aa-events-calendar-no-events"><?php esc_html_e( 'No events on this day.', 'aa-events' ); ?></p>
+			<?php endif; ?>
+		</section>
+	</div>
+<?php return; ?>
+<?php endif; ?>
 
 <div class="aa-events-calendar-wrap container" data-aa-events-calendar>
 	<div class="aa-events-calendar-utility">
@@ -200,7 +371,13 @@ $calendar_url      = static function ( DateTimeImmutable $date ) use ( $calendar
 							?>
 							<div class="<?php echo esc_attr( implode( ' ', $day_classes ) ); ?>" role="gridcell" aria-label="<?php echo esc_attr( wp_date( 'F j, Y', $day->getTimestamp(), $tz ) ); ?>">
 								<span class="day-number"><?php echo esc_html( wp_date( 'j', $day->getTimestamp(), $tz ) ); ?></span>
-						<?php foreach ( $segments_by_column[ $day_column ] as $segment ) : ?>
+						<?php
+						$day_visible_limit  = 3;
+						$day_segment_total = count( $segments_by_column[ $day_column ] );
+						$day_segments      = array_slice( $segments_by_column[ $day_column ], 0, $day_visible_limit );
+						$day_overflow      = $day_segment_total - count( $day_segments );
+						?>
+						<?php foreach ( $day_segments as $segment ) : ?>
 							<?php
 							$event_classes = array( 'aa-events-calendar-event' );
 							if ( ! empty( $segment['continues_before'] ) ) {
@@ -224,6 +401,16 @@ $calendar_url      = static function ( DateTimeImmutable $date ) use ( $calendar
 									<span class="aa-events-calendar-continuation" aria-hidden="true">&rarr;</span><?php endif; ?>
 							</a>
 						<?php endforeach; ?>
+						<?php if ( $day_overflow > 0 ) : ?>
+							<?php
+							$day_link_label = sprintf(
+								/* translators: %d: number of additional events not shown in the day cell. */
+								1 === $day_overflow ? __( '+ %d Event', 'aa-events' ) : __( '+ %d Events', 'aa-events' ),
+								$day_overflow
+							);
+							?>
+							<a class="aa-events-calendar-day-more-link" href="<?php echo esc_url( $day_url( $day ) ); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'View all %1$d events on %2$s', 'aa-events' ), $day_overflow, wp_date( 'F j, Y', $day->getTimestamp(), $tz ) ) ); ?>" data-aa-events-day-more="<?php echo esc_attr( $day->format( 'Y-m-d' ) ); ?>"><?php echo esc_html( $day_link_label ); ?></a>
+						<?php endif; ?>
 							</div>
 					<?php endforeach; ?>
 				</div>

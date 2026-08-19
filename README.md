@@ -93,6 +93,8 @@ Recurrence metadata is stored on the row itself. The plugin expands the row on d
 - Single: each event uses `templates/single-event.php`.
 - Calendar page: Page → Template → “Events Calendar” renders `templates/template-calendar.php` which includes `templates/calendar.php`.
 - Calendar navigation: query args `?aa_month=MM&aa_year=YYYY` change the visible month; “Today” jumps back to the current month. (`month`/`year` still work for legacy links.)
+- Day cells show up to 3 event entries; when more events fall on the same day, the cell renders a `+N Events` link to a day view for that day.
+- Day view: query arg `?aa_day=YYYY-MM-DD` on the calendar page renders all events for that single day with Previous day, Next day, and Back to calendar navigation.
 - Archive and single templates show each occurrence as a formatted date or date/time range.
 - Single-event pages show a clickable Contact Email when a valid address is provided.
 - On desktop and tablet, visitors can switch between Calendar and List views. Calendar is the initial default; the visitor’s selection is saved in the browser and restored after month navigation and on later visits.
@@ -126,6 +128,7 @@ An existing `your-theme/aa-events/calendar.php` remains authoritative. It does n
 - Default CSS ships with the plugin and is enqueued automatically.
 - To replace it, add `your-theme/aa-events/aa-events.css`. If present, the theme stylesheet is loaded instead of the plugin’s, even when the theme does not override any templates.
 - Existing theme stylesheet overrides must add styles for the calendar utility row, view switcher, selected and focus states, hidden inactive view panel, and the forced List view at `640px` wide and below.
+- Default styles target the day-cell overflow link (`.aa-events-calendar-day-more-link`) and the day view (`.aa-events-calendar-day-view`, `.aa-events-calendar-day-nav`, `.aa-events-calendar-day-list`, `.aa-events-calendar-day-item`). Theme overrides that replace `aa-events.css` should provide their own rules for these classes.
 
 Note: The bundled CSS is intentionally minimal. Use the override to match your theme.
 
