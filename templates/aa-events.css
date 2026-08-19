@@ -360,3 +360,82 @@
 	line-height: 1.4;
 	vertical-align: middle;
 }
+
+/* "+N Events" overflow link inside a day cell. */
+.aa-events-calendar-day-more-link {
+	color: #245b87;
+	display: block;
+	font-size: 0.85em;
+	line-height: 1.4;
+	margin-top: 0.25rem;
+	text-decoration: none;
+}
+
+.aa-events-calendar-day-more-link:hover,
+.aa-events-calendar-day-more-link:focus-visible {
+	text-decoration: underline;
+}
+
+.aa-events-calendar-day-more-link:focus-visible {
+	outline: 3px solid currentColor;
+	outline-offset: 2px;
+}
+
+/* Day view (rendered when ?aa_day=YYYY-MM-DD is set on the calendar page). */
+.aa-events-calendar-day-view {
+	margin-top: 0.5rem;
+}
+
+.aa-events-calendar-day-nav {
+	align-items: center;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.625rem;
+	justify-content: space-between;
+	margin-bottom: 1rem;
+}
+
+.aa-events-calendar-day-prev,
+.aa-events-calendar-day-next,
+.aa-events-calendar-day-back {
+	text-decoration: none;
+}
+
+.aa-events-calendar-day-prev:hover,
+.aa-events-calendar-day-prev:focus-visible,
+.aa-events-calendar-day-next:hover,
+.aa-events-calendar-day-next:focus-visible,
+.aa-events-calendar-day-back:hover,
+.aa-events-calendar-day-back:focus-visible {
+	text-decoration: underline;
+}
+
+.aa-events-calendar-day-prev:focus-visible,
+.aa-events-calendar-day-next:focus-visible,
+.aa-events-calendar-day-back:focus-visible {
+	outline: 3px solid currentColor;
+	outline-offset: 2px;
+}
+
+.aa-events-calendar-day-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.aa-events-calendar-day-item {
+	border-bottom: 1px solid #eee;
+	padding: 0.75rem 0;
+}
+
+.aa-events-calendar-day-item:first-child {
+	padding-top: 0;
+}
+
+.aa-events-calendar-day-item:last-child {
+	border-bottom: 0;
+}
+
+.aa-events-calendar-day-item-title {
+	font-weight: bold;
+}
