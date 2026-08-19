@@ -33,21 +33,28 @@
 	--aa-events-toggle-track: #d0d0d0;
 	--aa-events-toggle-active: #163d5d;
 	--aa-events-toggle-inactive: #6a737b;
-	--aa-events-toggle-knob-size: 1.5rem;
+	--aa-events-toggle-knob-border: #fff;
+	--aa-events-toggle-knob-size: 1.25rem;
 	--aa-events-toggle-padding: 1.5rem;
 	align-items: center;
 	display: inline-flex;
 	gap: var(--aa-events-toggle-padding);
+	margin-inline-end: var(--aa-events-toggle-knob-size);
 	padding: 0;
 }
 
 .aa-events-calendar-view-track {
 	--track-thickness: 2px;
+	appearance: none;
 	background: var(--aa-events-toggle-track);
+	border: 0;
 	border-radius: 999px;
-	flex: 0 1 5rem;
+	cursor: pointer;
+	flex: 0 0 var(--aa-events-toggle-knob-size);
+	font: inherit;
 	height: var(--track-thickness);
-	min-width: 4rem;
+	margin: 0;
+	padding: 0;
 	position: relative;
 	transition: flex-basis 0.2s ease-in-out;
 }
@@ -55,7 +62,9 @@
 .aa-events-calendar-view-track::after {
 	aspect-ratio: 1;
 	background: var(--aa-events-toggle-knob);
+	border: 2px solid var(--aa-events-toggle-knob-border);
 	border-radius: 999px;
+	box-sizing: border-box;
 	content: "";
 	height: var(--aa-events-toggle-knob-size);
 	left: 0;
@@ -68,6 +77,15 @@
 
 .aa-events-calendar-view-switcher.is-list-view-active .aa-events-calendar-view-track::after {
 	left: 100%;
+}
+
+.aa-events-calendar-view-track:focus-visible {
+	outline: none;
+}
+
+.aa-events-calendar-view-track:focus-visible::after {
+	outline: 3px solid var(--aa-events-toggle-knob);
+	outline-offset: 3px;
 }
 
 .aa-events-calendar-view-button {

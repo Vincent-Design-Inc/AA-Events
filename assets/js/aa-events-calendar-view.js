@@ -151,6 +151,7 @@
 
   function getInstance(root) {
     var switcher = root.querySelector('[data-aa-events-view-switcher]');
+    var toggleButton = root.querySelector('[data-aa-events-view-toggle]');
     var calendarButton = root.querySelector(
       '[data-aa-events-view-button="calendar"]'
     );
@@ -167,6 +168,7 @@
     return {
       root: root,
       switcher: switcher,
+      toggleButton: toggleButton,
       calendarButton: calendarButton,
       listButton: listButton,
       calendarPanel: calendarPanel,
@@ -225,6 +227,12 @@
           'aria-pressed',
           String(preference === LIST_VIEW)
         );
+        if (calendar.toggleButton) {
+          calendar.toggleButton.setAttribute(
+            'aria-pressed',
+            String(preference === LIST_VIEW)
+          );
+        }
       }
     }
 
@@ -246,6 +254,11 @@
         calendar.listButton.addEventListener('click', function () {
           selectView(LIST_VIEW);
         });
+        if (calendar.toggleButton) {
+          calendar.toggleButton.addEventListener('click', function () {
+            selectView(preference === LIST_VIEW ? CALENDAR_VIEW : LIST_VIEW);
+          });
+        }
       })(instances[buttonIndex]);
     }
 
