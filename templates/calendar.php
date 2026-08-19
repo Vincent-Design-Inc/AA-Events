@@ -264,7 +264,7 @@ $heading_id        = wp_unique_id( 'aa-events-calendar-heading-' );
 $agenda_heading_id = wp_unique_id( 'aa-events-calendar-agenda-heading-' );
 $month_label       = wp_date( 'F Y', $month['month_start']->getTimestamp(), $tz );
 $current_url       = add_query_arg( array() );
-$calendar_base_url = remove_query_arg( array( $month_param, $year_param, 'month', 'year' ), $current_url );
+$calendar_base_url = remove_query_arg( array( $month_param, $year_param, 'month', 'year', $day_param ), $current_url );
 $calendar_url      = static function ( DateTimeImmutable $date ) use ( $calendar_base_url, $month_param, $year_param ) {
 	return add_query_arg(
 		array(
