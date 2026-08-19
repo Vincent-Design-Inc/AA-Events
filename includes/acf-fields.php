@@ -94,7 +94,7 @@ function events_register_acf_fields() {
 						'conditional_logic' => 0,
 						'wrapper'           => array(
 							'width' => '',
-							'class' => '',
+							'class' => 'aa-events-hidden-legacy-field',
 							'id'    => '',
 						),
 						'display_format'    => 'F j, Y g:i a',
@@ -557,3 +557,31 @@ function events_register_acf_fields() {
 	endif;
 }
 add_action( 'acf/init', 'events_register_acf_fields' );
+
+/**
+ * Hide the legacy Event Date & Time field on the event edit screen.
+ *
+ * The field stays registered so old events that only ever had this field
+ * continue to surface an occurrence via aa_events_get_occurrences(). New
+ * events use the Occurrences repeater.
+ *
+ * @param array $field ACF field definition.
+ * @return array|false
+ */
+function events_hide_legacy_event_datetime_field( $field ) {
+	if ( ! is_array( $field ) || ! isset( $field['name'] ) ) {
+		return $field;
+	}
+	if ( 'event_datetime' !== $field['name'] ) {
+		return $field;
+	}
+	if ( ! function_exists( 'get_current_screen' ) ) {
+		return $field;
+	}
+	$screen = get_current_screen();
+	if ( $screen && isset( $screen->post_type ) && 'event' === $screen->post_type ) {
+		return false;
+	}
+	return $field;
+}
+add_filter( 'acf/prepare_field', 'events_hide_legacy_event_datetime_field' );

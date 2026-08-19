@@ -123,6 +123,13 @@ final class AA_Events {
 			AA_EVENTS_VERSION,
 			true
 		);
+
+		wp_enqueue_style(
+			'aa-events-admin',
+			AA_EVENTS_PLUGIN_URL . 'assets/css/aa-events-admin.css',
+			array(),
+			AA_EVENTS_VERSION
+		);
 	}
 
 	/**

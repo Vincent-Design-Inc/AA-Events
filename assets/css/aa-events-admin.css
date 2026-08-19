@@ -1,0 +1,6 @@
+/* Hide the legacy Event Date & Time field on the event edit screen.
+   The field stays registered so legacy events continue to surface an
+   occurrence via aa_events_get_occurrences(). */
+.aa-events-hidden-legacy-field {
+	display: none !important;
+}
