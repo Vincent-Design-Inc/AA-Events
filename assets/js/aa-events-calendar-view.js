@@ -150,6 +150,7 @@
   }
 
   function getInstance(root) {
+    var switcher = root.querySelector('[data-aa-events-view-switcher]');
     var calendarButton = root.querySelector(
       '[data-aa-events-view-button="calendar"]'
     );
@@ -165,6 +166,7 @@
 
     return {
       root: root,
+      switcher: switcher,
       calendarButton: calendarButton,
       listButton: listButton,
       calendarPanel: calendarPanel,
@@ -203,6 +205,16 @@
           'is-list-view',
           !mobile && preference === LIST_VIEW
         );
+        calendar.root.classList.toggle(
+          'is-calendar-view',
+          preference === CALENDAR_VIEW
+        );
+        if (calendar.switcher) {
+          calendar.switcher.classList.toggle(
+            'is-list-view-active',
+            !mobile && preference === LIST_VIEW
+          );
+        }
         calendar.calendarPanel.hidden = showList;
         calendar.listPanel.hidden = !showList;
         calendar.calendarButton.setAttribute(
