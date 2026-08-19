@@ -902,6 +902,7 @@ function aa_events_expand_recurring_occurrence( array $row, int $post_id = 0 ) {
 	}
 
 	$byweekday = aa_events_repeat_byweekday( $row['repeat_byweekday'] ?? '' );
+	$parent['series_recurring'] = true;
 
 	$results      = array( $parent );
 	$safety_start = new DateTimeImmutable( $parent['start_date'] . ' 00:00:00', wp_timezone() );
@@ -1114,15 +1115,16 @@ function aa_events_repeat_build_child( array $parent, string $candidate_date, in
 		->format( 'Y-m-d' );
 
 	$child = array(
-		'post_id'        => $post_id,
-		'start_date'     => $child_start_date,
-		'start_time'     => $parent['start_time'],
-		'end_date'       => $child_end_date,
-		'end_time'       => $parent['end_time'],
-		'all_day'        => $parent['all_day'],
-		'source'         => 'event_dates_recurring',
-		'start_inferred' => false,
-		'end_inferred'   => $parent['end_inferred'],
+		'post_id'          => $post_id,
+		'start_date'       => $child_start_date,
+		'start_time'       => $parent['start_time'],
+		'end_date'         => $child_end_date,
+		'end_time'         => $parent['end_time'],
+		'all_day'          => $parent['all_day'],
+		'source'           => 'event_dates_recurring',
+		'series_recurring' => true,
+		'start_inferred'   => false,
+		'end_inferred'     => $parent['end_inferred'],
 	);
 
 	if ( ! aa_events_occurrence_range_is_valid( $child['start_date'], $child['start_time'], $child['end_date'], $child['end_time'], $child['all_day'] ) ) {
@@ -1183,6 +1185,16 @@ function aa_events_add_months( DateTimeImmutable $date, int $months ) {
  */
 function aa_events_is_recurring_occurrence( array $occurrence ) {
 	return isset( $occurrence['source'] ) && 'event_dates_recurring' === $occurrence['source'];
+}
+
+/**
+ * Determine whether an occurrence belongs to a valid recurring series.
+ *
+ * @param array $occurrence Normalized occurrence.
+ * @return bool
+ */
+function aa_events_is_recurring_series_occurrence( array $occurrence ) {
+	return ! empty( $occurrence['series_recurring'] );
 }
 
 /**
