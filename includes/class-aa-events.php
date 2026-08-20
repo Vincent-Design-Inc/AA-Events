@@ -67,6 +67,7 @@ final class AA_Events {
 		// Ensure the active theme supports thumbnails for the event post type.
 		add_action( 'after_setup_theme', array( $this, 'ensure_post_thumbnails_support' ) );
 		add_filter( 'query_vars', array( $this, 'register_calendar_query_vars' ) );
+		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
 	}
 
 	/**
@@ -98,6 +99,31 @@ final class AA_Events {
 			AA_EVENTS_VERSION,
 			true
 		);
+
+		if ( function_exists( 'is_singular' ) && is_singular( 'event' ) && function_exists( 'aa_events_get_recurrence_summary' ) ) {
+			$post_id  = (int) ( function_exists( 'get_queried_object_id' ) ? get_queried_object_id() : 0 );
+			$summary  = $post_id ? aa_events_get_recurrence_summary( $post_id ) : null;
+			$has_more = is_array( $summary ) && ! empty( $summary['has_more'] );
+			if ( $has_more ) {
+				wp_enqueue_script(
+					'aa-events-recurring-show-more',
+					AA_EVENTS_PLUGIN_URL . 'assets/js/aa-events-recurring-show-more.js',
+					array(),
+					AA_EVENTS_VERSION,
+					true
+				);
+				wp_localize_script(
+					'aa-events-recurring-show-more',
+					'aaEventsRecurrence',
+					array(
+						'restUrl'   => function_exists( 'rest_url' )
+							? esc_url_raw( rest_url( 'aa-events/v1/event/' . $post_id . '/occurrences' ) )
+							: '',
+						'restNonce' => function_exists( 'wp_create_nonce' ) ? wp_create_nonce( 'wp_rest' ) : '',
+					)
+				);
+			}
+		}
 	}
 
 	/**
@@ -182,5 +208,93 @@ final class AA_Events {
 		$vars[] = 'aa_day';
 
 		return $vars;
+	}
+
+	/**
+	 * Register the recurring-event REST route used by "Show next" pagination.
+	 *
+	 * @return void
+	 */
+	public function register_rest_routes() {
+		register_rest_route(
+			'aa-events/v1',
+			'/event/(?P<id>\d+)/occurrences',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( $this, 'rest_get_event_occurrences' ),
+				'permission_callback' => '__return_true',
+				'args'                => array(
+					'id'     => array(
+						'required'          => true,
+						'validate_callback' => static function ( $value ) {
+							return is_numeric( $value ) && (int) $value > 0;
+						},
+						'sanitize_callback' => 'absint',
+					),
+					'offset' => array(
+						'required'          => false,
+						'default'           => 0,
+						'sanitize_callback' => 'absint',
+					),
+					'limit'  => array(
+						'required'          => false,
+						'default'           => 5,
+						'sanitize_callback' => 'absint',
+					),
+				),
+			)
+		);
+	}
+
+	/**
+	 * REST handler: return a slice of occurrences for a recurring event.
+	 *
+	 * @param WP_REST_Request $request Current request.
+	 * @return WP_REST_Response
+	 */
+	public function rest_get_event_occurrences( $request ) {
+		$post_id = (int) $request->get_param( 'id' );
+		$offset  = (int) $request->get_param( 'offset' );
+		$limit   = (int) $request->get_param( 'limit' );
+
+		if ( ! $post_id || 'event' !== get_post_type( $post_id ) ) {
+			return new WP_REST_Response( array( 'error' => 'not_found' ), 404 );
+		}
+
+		$occurrences = function_exists( 'aa_events_get_occurrences' )
+			? aa_events_get_occurrences( $post_id )
+			: array();
+		$total       = count( $occurrences );
+
+		if ( $offset < 0 ) {
+			$offset = 0;
+		}
+		if ( $limit < 1 ) {
+			$limit = 5;
+		}
+		if ( $limit > 50 ) {
+			$limit = 50;
+		}
+
+		$slice = array_slice( $occurrences, $offset, $limit );
+		$items = array();
+		foreach ( $slice as $occurrence ) {
+			$items[] = array(
+				'markup' => aa_events_occurrence_time_markup( $occurrence ),
+			);
+		}
+
+		$has_more = ( $offset + count( $slice ) ) < $total;
+
+		return rest_ensure_response(
+			array(
+				'items'       => $items,
+				'total'       => $total,
+				'offset'      => $offset,
+				'limit'       => $limit,
+				'has_more'    => $has_more,
+				'next_offset' => $has_more ? $offset + $limit : $offset,
+			)
+		);
 	}
 }

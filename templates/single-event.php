@@ -35,18 +35,36 @@ get_header(); ?>
 
                     <footer class="entry-footer">
                         <div class="aa-event-details">
-                            <?php $occurrences = aa_events_get_occurrences( get_the_ID() ); ?>
-                            <?php if ( $occurrences ) : ?>
+                            <?php $summary = aa_events_get_recurrence_summary( get_the_ID() ); ?>
+                            <?php if ( ! empty( $summary['occurrences'] ) ) : ?>
                             <div class="aa-event-date">
-                                <strong><?php echo esc_html( 1 === count( $occurrences ) ? __( 'Date:', 'aa-events' ) : __( 'Dates:', 'aa-events' ) ); ?></strong>
+                                <strong><?php echo esc_html( 1 === $summary['total'] ? __( 'Date:', 'aa-events' ) : __( 'Dates:', 'aa-events' ) ); ?></strong>
                                 <?php
+                                if ( ! empty( $summary['description'] ) ) {
+                                    echo '<p class="aa-event-recurrence-summary">' . esc_html( $summary['description'] ) . '</p>';
+                                }
 
-                                foreach ( $occurrences as $index => $occurrence ) {
+                                foreach ( $summary['occurrences'] as $index => $occurrence ) {
 									echo aa_events_occurrence_time_markup( $occurrence ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Helper returns escaped markup.
 									if ( aa_events_is_recurring_occurrence( $occurrence ) ) {
 										echo ' <span class="aa-event-recurring-badge">' . esc_html__( 'Recurring', 'aa-events' ) . '</span>';
 									}
-									echo ( $index < count( $occurrences ) - 1 ) ? '<br />' : '';
+									echo ( $index < count( $summary['occurrences'] ) - 1 ) ? '<br />' : '';
+                                }
+
+                                if ( ! empty( $summary['has_more'] ) ) {
+                                    ?>
+                                    <button
+                                        type="button"
+                                        class="aa-event-show-more"
+                                        data-event-id="<?php echo esc_attr( (string) get_the_ID() ); ?>"
+                                        data-offset="<?php echo esc_attr( (string) $summary['next_offset'] ); ?>"
+                                        data-window="<?php echo esc_attr( (string) $summary['window'] ); ?>"
+                                    ><?php
+                                        /* translators: %d: number of additional occurrences revealed per click. */
+                                        echo esc_html( sprintf( __( 'Show next %d', 'aa-events' ), $summary['window'] ) );
+                                    ?></button>
+                                    <?php
                                 }
                                 ?>
                             </div>
