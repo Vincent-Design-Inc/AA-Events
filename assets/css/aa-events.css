@@ -189,6 +189,15 @@
 	margin-bottom: 0.3125rem;
 }
 
+.aa-events-calendar-event-icon {
+	color: var(--color-primary-red, #c00);
+	flex: 0 0 auto;
+	font-size: 0.875rem;
+	line-height: 1;
+	margin-left: -0.625rem;
+	margin-right: 0.125rem;
+}
+
 .aa-events-calendar-day.is-outside-month {
 	background: #f7f7f7;
 	color: #666;
@@ -226,6 +235,7 @@
 	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .aa-events-calendar-event.is-continuing-before {
