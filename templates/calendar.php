@@ -391,6 +391,7 @@ $day_url       = static function ( DateTimeImmutable $date ) use ( $calendar_bas
 							$event_label = sprintf( __( '%1$s: %2$s', 'aa-events' ), $segment['title'], aa_events_format_occurrence( $segment ) );
 							?>
 							<a class="<?php echo esc_attr( implode( ' ', $event_classes ) ); ?>" style="--aa-event-column: <?php echo esc_attr( (int) $segment['start_column'] ); ?>; --aa-event-span: <?php echo esc_attr( (int) $segment['span'] ); ?>; --aa-event-lane: <?php echo esc_attr( (int) $segment['lane'] ); ?>;" href="<?php echo esc_url( $segment['permalink'] ); ?>" aria-label="<?php echo esc_attr( $event_label ); ?>" data-aa-events-occurrence="<?php echo esc_attr( $segment['calendar_occurrence_key'] ); ?>">
+								<i class="fa fa-calendar aa-events-calendar-event-icon" aria-hidden="true"></i>
 								<?php
 								if ( ! empty( $segment['continues_before'] ) ) :
 									?>
