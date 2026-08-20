@@ -1198,6 +1198,286 @@ function aa_events_is_recurring_series_occurrence( array $occurrence ) {
 }
 
 /**
+ * Infer which ordinal weekday(s) the parent date represents within its month.
+ *
+ * For example, 2026-08-25 (a Tuesday) is the 4th Tuesday of August 2026,
+ * so passing ('2026-08-25', ['tue']) returns ['4th']. Returns an empty
+ * array when byweekday is empty.
+ *
+ * @param string $parent_start_date Y-m-d parent date.
+ * @param array  $byweekday         Lowercase weekday tokens (mon..sun).
+ * @return array<int,string> Ordinal labels like '1st', '2nd', '3rd', '4th'.
+ */
+function aa_events_infer_monthly_byweekday_ordinals( $parent_start_date, array $byweekday ) {
+	$parent_start_date = aa_events_occurrence_string( $parent_start_date );
+	if ( null === $parent_start_date || '' === $parent_start_date || ! $byweekday ) {
+		return array();
+	}
+
+	$tz       = wp_timezone();
+	$datetime = DateTimeImmutable::createFromFormat( '!Y-m-d', $parent_start_date, $tz );
+	if ( false === $datetime ) {
+		return array();
+	}
+
+	$weekday_index = (int) $datetime->format( 'N' ) - 1;
+	$weekday_keys  = array( 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun' );
+	$token         = $weekday_keys[ $weekday_index ];
+	if ( ! in_array( $token, $byweekday, true ) ) {
+		return array();
+	}
+
+	$day_of_month = (int) $datetime->format( 'j' );
+	$ordinal      = (int) ceil( $day_of_month / 7 );
+
+	$labels = array( '1st', '2nd', '3rd', '4th', '5th' );
+	return array( $labels[ $ordinal - 1 ] ?? (string) $ordinal . 'th' );
+}
+
+/**
+ * Build a human-readable sentence describing a recurring row's pattern.
+ *
+ * Returns an empty string for non-recurring rows or rows whose shape
+ * (unit, end-type combination, byweekday) doesn't fit a supported
+ * template. Callers should treat the empty string as "no description"
+ * and not render any wrapper around it.
+ *
+ * @param array $row Raw repeater row including recurrence fields.
+ * @return string Human-readable description, or '' when no template fits.
+ */
+function aa_events_describe_recurrence( array $row ) {
+	if ( ! aa_events_occurrence_boolean( $row['repeat_enabled'] ?? false ) ) {
+		return '';
+	}
+
+	$interval = aa_events_repeat_positive_integer( $row['repeat_interval'] ?? 1, 1 );
+	$unit     = aa_events_repeat_unit( $row['repeat_unit'] ?? 'week' );
+	$end_type = aa_events_repeat_end_type( $row['repeat_end_type'] ?? 'never' );
+	if ( null === $interval || null === $unit || null === $end_type ) {
+		return '';
+	}
+
+	$byweekday = aa_events_repeat_byweekday( $row['repeat_byweekday'] ?? '' );
+
+	$base = aa_events_normalize_occurrence_row( $row, 'event_dates', 0 );
+	if ( null === $base ) {
+		return '';
+	}
+
+	$unit_noun = array(
+		'day'   => _n( 'day', 'days', $interval, 'aa-events' ),
+		'week'  => _n( 'week', 'weeks', $interval, 'aa-events' ),
+		'month' => _n( 'month', 'months', $interval, 'aa-events' ),
+		'year'  => _n( 'year', 'years', $interval, 'aa-events' ),
+	);
+
+	if ( 1 === $interval ) {
+		$frequency = sprintf( 'every %s', $unit_noun[ $unit ] );
+	} else {
+		$frequency = sprintf( 'every %d %s', $interval, $unit_noun[ $unit ] );
+	}
+
+	$ending = '';
+	if ( 'on_date' === $end_type ) {
+		$end_date = aa_events_repeat_end_date( $row['repeat_end_date'] ?? '' );
+		if ( null === $end_date ) {
+			return '';
+		}
+		$ending = sprintf(
+			' through %s',
+			wp_date( 'F j, Y', ( new DateTimeImmutable( $end_date . ' 00:00:00', wp_timezone() ) )->getTimestamp() )
+		);
+	} elseif ( 'after_count' === $end_type ) {
+		$count = aa_events_repeat_positive_integer( $row['repeat_end_count'] ?? 12, 12 );
+		if ( null === $count ) {
+			return '';
+		}
+		$ending = sprintf(
+			/* translators: %d: total occurrence count. */
+			_n( ' for %d occurrence', ' for %d occurrences', $count, 'aa-events' ),
+			$count
+		);
+	}
+
+	if ( 'week' === $unit && $byweekday ) {
+		$day_labels = array(
+			'mon' => __( 'Monday', 'aa-events' ),
+			'tue' => __( 'Tuesday', 'aa-events' ),
+			'wed' => __( 'Wednesday', 'aa-events' ),
+			'thu' => __( 'Thursday', 'aa-events' ),
+			'fri' => __( 'Friday', 'aa-events' ),
+			'sat' => __( 'Saturday', 'aa-events' ),
+			'sun' => __( 'Sunday', 'aa-events' ),
+		);
+		$names = array();
+		foreach ( $byweekday as $token ) {
+			if ( isset( $day_labels[ $token ] ) ) {
+				$names[] = $day_labels[ $token ];
+			}
+		}
+		if ( ! $names ) {
+			return '';
+		}
+		$weekday_list = wp_sprintf_fallback_join( $names );
+		return sprintf(
+			'Event runs on %s%s, indefinitely.',
+			$weekday_list,
+			$ending
+		);
+	}
+
+	if ( 'month' === $unit && $byweekday ) {
+		$ordinals = aa_events_infer_monthly_byweekday_ordinals( $base['start_date'], $byweekday );
+		if ( ! $ordinals ) {
+			return '';
+		}
+		$day_labels = array(
+			'mon' => __( 'Monday', 'aa-events' ),
+			'tue' => __( 'Tuesday', 'aa-events' ),
+			'wed' => __( 'Wednesday', 'aa-events' ),
+			'thu' => __( 'Thursday', 'aa-events' ),
+			'fri' => __( 'Friday', 'aa-events' ),
+			'sat' => __( 'Saturday', 'aa-events' ),
+			'sun' => __( 'Sunday', 'aa-events' ),
+		);
+		$names = array();
+		foreach ( $byweekday as $token ) {
+			if ( isset( $day_labels[ $token ] ) ) {
+				$names[] = $day_labels[ $token ];
+			}
+		}
+		if ( ! $names || count( $names ) !== 1 ) {
+			return '';
+		}
+		$weekday_list = $names[0];
+		$ordinal_list = wp_sprintf_fallback_join( $ordinals );
+		return sprintf(
+			'Event occurs every %s %s of the month%s, indefinitely.',
+			$ordinal_list,
+			$weekday_list,
+			$ending
+		);
+	}
+
+	if ( 'never' === $end_type ) {
+		return sprintf( 'Event runs %s, indefinitely.', $frequency );
+	}
+	if ( 'on_date' === $end_type ) {
+		return sprintf( 'Event runs %s%s.', $frequency, $ending );
+	}
+	if ( 'after_count' === $end_type ) {
+		return sprintf( 'Event runs %s%s.', $frequency, $ending );
+	}
+
+	return '';
+}
+
+/**
+ * Test-helper fallback for wp_sprintf() which isn't available outside WP.
+ *
+ * @param array $items Items to join.
+ * @return string English-list joined string.
+ */
+function wp_sprintf_fallback_join( array $items ) {
+	if ( ! $items ) {
+		return '';
+	}
+	if ( 1 === count( $items ) ) {
+		return $items[0];
+	}
+	if ( 2 === count( $items ) ) {
+		return $items[0] . ' and ' . $items[1];
+	}
+	return implode( ', ', array_slice( $items, 0, -1 ) ) . ', and ' . end( $items );
+}
+
+/**
+ * Default number of occurrences shown on the single event template.
+ */
+const AA_EVENTS_DEFAULT_DISPLAY_WINDOW = 5;
+
+/**
+ * Allowed display window values editors can pick from in the ACF field.
+ *
+ * @return array<int,int>
+ */
+function aa_events_allowed_display_windows() {
+	return array( 5, 10, 25, 50 );
+}
+
+/**
+ * Resolve the configured display window for an event.
+ *
+ * @param int $post_id Event post ID.
+ * @return int Window size, defaulting to AA_EVENTS_DEFAULT_DISPLAY_WINDOW.
+ */
+function aa_events_resolve_display_window( $post_id ) {
+	$post_id = (int) $post_id;
+	if ( ! $post_id ) {
+		return AA_EVENTS_DEFAULT_DISPLAY_WINDOW;
+	}
+
+	$raw = function_exists( 'get_field' ) ? get_field( 'event_display_window', $post_id ) : null;
+	$raw = aa_events_occurrence_string( $raw );
+	if ( null === $raw || '' === $raw ) {
+		return AA_EVENTS_DEFAULT_DISPLAY_WINDOW;
+	}
+	$int = (int) $raw;
+	if ( ! in_array( $int, aa_events_allowed_display_windows(), true ) ) {
+		return AA_EVENTS_DEFAULT_DISPLAY_WINDOW;
+	}
+	return $int;
+}
+
+/**
+ * Build a recurring-event display summary for the single event template.
+ *
+ * Returns an array containing:
+ *   - description: human-readable sentence describing the recurrence
+ *     (empty string when no template fits or the row is non-recurring)
+ *   - occurrences: array of normalized occurrences, truncated to the window
+ *   - total: total number of occurrences in the series (or 1 for non-recurring)
+ *   - window: the resolved window size
+ *   - has_more: true when total > window
+ *   - next_offset: starting offset for the next slice when has_more is true,
+ *     otherwise the window itself (so a "Show next" handler can increment
+ *     uniformly)
+ *
+ * The summary reads the first occurrence row of the event; non-recurring
+ * events still return the single occurrence with has_more=false.
+ *
+ * @param int $post_id Event post ID.
+ * @return array<string,mixed>
+ */
+function aa_events_get_recurrence_summary( $post_id ) {
+	$post_id     = (int) $post_id;
+	$occurrences = aa_events_get_occurrences( $post_id );
+	$window      = aa_events_resolve_display_window( $post_id );
+	$total       = count( $occurrences );
+
+	$description = '';
+	if ( $total > 0 ) {
+		$rows = function_exists( 'get_field' ) ? get_field( 'event_dates', $post_id ) : null;
+		if ( is_array( $rows ) && ! empty( $rows[0] ) && is_array( $rows[0] ) ) {
+			$description = aa_events_describe_recurrence( $rows[0] );
+		}
+	}
+
+	$visible       = array_slice( $occurrences, 0, $window );
+	$has_more      = $total > $window;
+	$next_offset   = $has_more ? $window : $window;
+
+	return array(
+		'description' => $description,
+		'occurrences' => $visible,
+		'total'       => $total,
+		'window'      => $window,
+		'has_more'    => $has_more,
+		'next_offset' => $next_offset,
+	);
+}
+
+/**
  * Coerce a repeat interval value through the ACF validation pipeline.
  *
  * Returns $valid unchanged on every input so the row never blocks save.
