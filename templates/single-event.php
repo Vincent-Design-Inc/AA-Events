@@ -61,17 +61,19 @@ get_header(); ?>
 
                                 if ( ! empty( $summary['has_more'] ) ) {
                                     ?>
-                                    <button
-                                        type="button"
-                                        class="aa-event-show-more"
-                                        data-target="#<?php echo esc_attr( $list_id ); ?>"
-                                        data-event-id="<?php echo esc_attr( (string) get_the_ID() ); ?>"
-                                        data-offset="<?php echo esc_attr( (string) $summary['next_offset'] ); ?>"
-                                        data-window="<?php echo esc_attr( (string) $summary['window'] ); ?>"
-                                    ><?php
-                                        /* translators: %d: number of additional occurrences revealed per click. */
-                                        echo esc_html( sprintf( __( 'Show next %d', 'aa-events' ), $summary['window'] ) );
-                                    ?></button>
+                                    <div class="aa-event-show-more-wrapper">
+                                        <button
+                                            type="button"
+                                            class="aa-event-show-more"
+                                            data-target="#<?php echo esc_attr( $list_id ); ?>"
+                                            data-event-id="<?php echo esc_attr( (string) get_the_ID() ); ?>"
+                                            data-offset="<?php echo esc_attr( (string) $summary['next_offset'] ); ?>"
+                                            data-window="<?php echo esc_attr( (string) $summary['window'] ); ?>"
+                                        ><?php
+                                            /* translators: %d: number of additional occurrences revealed per click. */
+                                            echo esc_html( sprintf( __( 'Show next %d', 'aa-events' ), $summary['window'] ) );
+                                        ?></button>
+                                    </div>
                                     <?php
                                 }
                                 ?>

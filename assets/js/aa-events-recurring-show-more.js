@@ -44,6 +44,19 @@
         return explicit;
       }
     }
+
+    // Walk up from the clicked button to the show-more wrapper, then look
+    // for the occurrence list as a previous sibling. This works even when
+    // the button itself lives inside a custom element (e.g. <x-button>)
+    // that does not forward data-* attributes into its shadow tree.
+    var wrapper = button.closest('.aa-event-show-more-wrapper');
+    if (wrapper && wrapper.previousElementSibling) {
+      var sibling = wrapper.previousElementSibling;
+      if (sibling.classList && sibling.classList.contains('aa-event-occurrence-list')) {
+        return sibling;
+      }
+    }
+
     var ancestor = button.parentElement;
     while (ancestor && !ancestor.classList.contains('aa-event-occurrence-list')) {
       ancestor = ancestor.parentElement;
