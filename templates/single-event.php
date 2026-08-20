@@ -44,6 +44,10 @@ get_header(); ?>
                                     echo '<p class="aa-event-recurrence-summary">' . esc_html( $summary['description'] ) . '</p>';
                                 }
 
+                                $list_id = 'aa-event-occurrence-list-' . (int) get_the_ID();
+                                ?>
+                                <div class="aa-event-occurrence-list" id="<?php echo esc_attr( $list_id ); ?>">
+                                <?php
                                 foreach ( $summary['occurrences'] as $index => $occurrence ) {
 									echo aa_events_occurrence_time_markup( $occurrence ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Helper returns escaped markup.
 									if ( aa_events_is_recurring_occurrence( $occurrence ) ) {
@@ -51,12 +55,16 @@ get_header(); ?>
 									}
 									echo ( $index < count( $summary['occurrences'] ) - 1 ) ? '<br />' : '';
                                 }
+                                ?>
+                                </div>
+                                <?php
 
                                 if ( ! empty( $summary['has_more'] ) ) {
                                     ?>
                                     <button
                                         type="button"
                                         class="aa-event-show-more"
+                                        data-target="#<?php echo esc_attr( $list_id ); ?>"
                                         data-event-id="<?php echo esc_attr( (string) get_the_ID() ); ?>"
                                         data-offset="<?php echo esc_attr( (string) $summary['next_offset'] ); ?>"
                                         data-window="<?php echo esc_attr( (string) $summary['window'] ); ?>"

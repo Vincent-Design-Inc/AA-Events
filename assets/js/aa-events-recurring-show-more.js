@@ -30,8 +30,25 @@
   function appendItem(target, markup) {
     var wrapper = document.createElement('span');
     wrapper.className = 'aa-event-occurrence-item';
+    var breakNode = document.createElement('br');
+    target.appendChild(breakNode);
     wrapper.innerHTML = markup;
     target.appendChild(wrapper);
+  }
+
+  function resolveTarget(button) {
+    var target_selector = button.getAttribute('data-target');
+    if (target_selector) {
+      var explicit = document.querySelector(target_selector);
+      if (explicit) {
+        return explicit;
+      }
+    }
+    var ancestor = button.parentElement;
+    while (ancestor && !ancestor.classList.contains('aa-event-occurrence-list')) {
+      ancestor = ancestor.parentElement;
+    }
+    return ancestor || button.parentNode;
   }
 
   function bind(button) {
@@ -42,6 +59,12 @@
 
     var config = getConfig();
     if (!config || !config.restUrl || !config.restNonce) {
+      button.parentNode && button.parentNode.removeChild(button);
+      return;
+    }
+
+    var target = resolveTarget(button);
+    if (!target) {
       button.parentNode && button.parentNode.removeChild(button);
       return;
     }
@@ -66,7 +89,6 @@
         })
         .then(function (payload) {
           var items = payload && payload.items ? payload.items : [];
-          var target = button.parentNode;
           var index;
 
           for (index = 0; index < items.length; index += 1) {
