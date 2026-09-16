@@ -27,6 +27,26 @@ function aa_events_contact_email_markup( $value ) {
 }
 
 /**
+ * Build safe contact-phone markup for event templates.
+ *
+ * @param mixed $value Raw contact phone value.
+ * @return string Escaped tel anchor, or an empty string for invalid input.
+ */
+function aa_events_contact_phone_markup( $value ) {
+	$raw = trim( (string) $value );
+	if ( '' === $raw || ! preg_match( '/\d/', $raw ) || ! preg_match( '/^[0-9+\s().-]+$/', $raw ) ) {
+		return '';
+	}
+
+	$telephone = preg_replace( '/[^0-9+]/', '', $raw );
+	if ( '' === $telephone ) {
+		return '';
+	}
+
+	return '<a href="' . esc_attr( 'tel:' . $telephone ) . '">' . esc_html( $raw ) . '</a>';
+}
+
+/**
  * Build safe registration-link markup for event templates.
  *
  * @param mixed $value Raw registration link value.

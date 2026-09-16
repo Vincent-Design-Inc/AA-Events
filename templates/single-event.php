@@ -69,10 +69,12 @@ get_header(); ?>
                                             data-event-id="<?php echo esc_attr( (string) get_the_ID() ); ?>"
                                             data-offset="<?php echo esc_attr( (string) $summary['next_offset'] ); ?>"
                                             data-window="<?php echo esc_attr( (string) $summary['window'] ); ?>"
-                                        ><?php
+                                        >
+                                            <?php
                                             /* translators: %d: number of additional occurrences revealed per click. */
                                             echo esc_html( sprintf( __( 'Show next %d', 'aa-events' ), $summary['window'] ) );
-                                        ?></button>
+                                            ?>
+                                        </button>
                                     </div>
                                     <?php
                                 }
@@ -109,6 +111,14 @@ get_header(); ?>
 								<?php echo wp_kses_post( $contact_email_markup ); ?>
 							</div>
 							<?php endif; ?>
+
+                            <?php $contact_phone_markup = aa_events_contact_phone_markup( get_field( 'event_contact_phone' ) ); ?>
+                            <?php if ( $contact_phone_markup ) : ?>
+                            <div class="aa-event-contact-phone">
+                                <strong><?php echo esc_html( __( 'Contact Phone Number:', 'aa-events' ) ); ?></strong>
+                                <?php echo wp_kses_post( $contact_phone_markup ); ?>
+                            </div>
+                            <?php endif; ?>
 
                             <?php if ( get_the_terms( get_the_ID(), 'event_type' ) ) { ?>
                                 <div class="aa-event-type">

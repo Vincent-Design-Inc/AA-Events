@@ -41,6 +41,7 @@ An approachable, theme‑friendly events plugin for WordPress. It adds an `Event
    - Event URL (required when Online)
    - Event Address (required when In‑Person)
    - Contact Email (optional; displayed on the single-event page)
+   - Contact Phone Number (optional; displayed as a clickable link on the single-event page)
 3. View your list of events at `/events` and single event pages at their permalinks.
 4. For a calendar view, create a new Page and choose the "Events Calendar" template, then publish.
 
@@ -97,6 +98,7 @@ Recurrence metadata is stored on the row itself. The plugin expands the row on d
 - Day view: query arg `?aa_day=YYYY-MM-DD` on the calendar page renders all events for that single day with Previous day, Next day, and Back to calendar navigation.
 - Archive and single templates show each occurrence as a formatted date or date/time range.
 - Single-event pages show a clickable Contact Email when a valid address is provided.
+- Single-event pages show a clickable Contact Phone Number when a valid number is provided.
 - On desktop and tablet, visitors can switch between Calendar and List views. Calendar is the initial default; the visitor’s selection is saved in the browser and restored after month navigation and on later visits.
 - Calendar view uses a traditional month grid. Multi-day occurrences render as bars spanning each week they cross, with the event title repeated on each weekly segment.
 - At `640px` wide and below, the view switcher is hidden and the chronological List view is always used, regardless of any saved desktop preference.

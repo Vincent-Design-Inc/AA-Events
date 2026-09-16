@@ -482,7 +482,7 @@ function events_register_acf_fields() {
 						'name'              => 'event_url',
 						'type'              => 'url',
 						'instructions'      => '',
-						'required'          => 1,
+						'required'          => 0,
 						'conditional_logic' => array(
 							array(
 								array(
@@ -506,7 +506,7 @@ function events_register_acf_fields() {
 						'name'              => 'event_address',
 						'type'              => 'wysiwyg',
 						'instructions'      => '',
-						'required'          => 1,
+						'required'          => 0,
 						'conditional_logic' => array(
 							array(
 								array(
@@ -532,6 +532,22 @@ function events_register_acf_fields() {
 						'label'             => 'Contact Email',
 						'name'              => 'event_contact_email',
 						'type'              => 'email',
+						'instructions'      => '',
+						'required'          => 0,
+						'conditional_logic' => 0,
+						'wrapper'           => array(
+							'width' => '',
+							'class' => '',
+							'id'    => '',
+						),
+						'default_value'     => '',
+						'placeholder'       => '',
+					),
+					array(
+						'key'               => 'field_aa_events_contact_phone',
+						'label'             => 'Contact Phone Number',
+						'name'              => 'event_contact_phone',
+						'type'              => 'text',
 						'instructions'      => '',
 						'required'          => 0,
 						'conditional_logic' => 0,
