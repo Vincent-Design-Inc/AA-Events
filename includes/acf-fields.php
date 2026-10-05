@@ -504,7 +504,7 @@ function events_register_acf_fields() {
 						'key'               => 'field_61b0c72fa3e85',
 						'label'             => 'Event Address',
 						'name'              => 'event_address',
-						'type'              => 'wysiwyg',
+						'type'              => 'textarea',
 						'instructions'      => '',
 						'required'          => 0,
 						'conditional_logic' => array(

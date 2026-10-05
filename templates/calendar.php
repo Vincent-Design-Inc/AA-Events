@@ -426,7 +426,9 @@ $day_url       = static function ( DateTimeImmutable $date ) use ( $calendar_bas
 		<?php if ( $calendar_occurrences ) : ?>
 			<ol class="aa-events-calendar-agenda-list">
 				<?php foreach ( $calendar_occurrences as $occurrence ) : ?>
-					<li class="aa-events-agenda-item"><a href="<?php echo esc_url( $occurrence['permalink'] ); ?>"><span class="aa-events-agenda-title"><?php echo esc_html( $occurrence['title'] ); ?></span> <?php echo aa_events_occurrence_time_markup( $occurrence ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Helper returns escaped markup. ?></a></li>
+					<?php /* translators: 1: event title, 2: complete event date and time range. */ ?>
+					<?php $agenda_label = sprintf( __( '%1$s: %2$s', 'aa-events' ), $occurrence['title'], aa_events_format_occurrence( $occurrence ) ); ?>
+					<li class="aa-events-agenda-item"><a href="<?php echo esc_url( $occurrence['permalink'] ); ?>" aria-label="<?php echo esc_attr( $agenda_label ); ?>"><span class="aa-events-agenda-title"><?php echo esc_html( $occurrence['title'] ); ?></span> <?php echo aa_events_occurrence_time_markup( $occurrence ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Helper returns escaped markup. ?></a></li>
 				<?php endforeach; ?>
 			</ol>
 		<?php else : ?>
