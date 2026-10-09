@@ -201,7 +201,6 @@
 
       for (var instanceIndex = 0; instanceIndex < instances.length; instanceIndex += 1) {
         var calendar = instances[instanceIndex];
-        var showList = mobile || preference === LIST_VIEW;
 
         calendar.root.classList.toggle(
           'is-list-view',
@@ -217,8 +216,6 @@
             !mobile && preference === LIST_VIEW
           );
         }
-        calendar.calendarPanel.hidden = showList;
-        calendar.listPanel.hidden = !showList;
         calendar.calendarButton.setAttribute(
           'aria-pressed',
           String(preference === CALENDAR_VIEW)
