@@ -1319,8 +1319,12 @@ function aa_events_describe_recurrence( array $row ) {
 			return '';
 		}
 		$weekday_list = wp_sprintf_fallback_join( $names );
+		if ( 'never' === $end_type ) {
+			$ending = ', indefinitely';
+		}
 		return sprintf(
-			'Event runs on %s%s, indefinitely.',
+			'Event runs %s on %s%s.',
+			$frequency,
 			$weekday_list,
 			$ending
 		);
