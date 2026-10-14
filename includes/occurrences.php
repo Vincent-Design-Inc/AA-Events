@@ -1470,9 +1470,9 @@ function aa_events_get_recurrence_summary( $post_id ) {
 		}
 	}
 
-	$visible       = array_slice( $occurrences, 0, $window );
-	$has_more      = $total > $window;
-	$next_offset   = $has_more ? $window : $window;
+	$visible     = array_slice( $occurrences, 0, $window );
+	$has_more    = $total > $window;
+	$next_offset = $has_more ? $window : $window;
 
 	return array(
 		'description' => $description,
