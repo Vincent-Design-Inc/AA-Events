@@ -1322,6 +1322,9 @@ function aa_events_describe_recurrence( array $row ) {
 		if ( 'never' === $end_type ) {
 			$ending = ', indefinitely';
 		}
+		if ( 1 === $interval ) {
+			return sprintf( 'Event runs on %s%s.', $weekday_list, $ending );
+		}
 		return sprintf(
 			'Event runs %s on %s%s.',
 			$frequency,
