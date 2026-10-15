@@ -901,7 +901,7 @@ function aa_events_expand_recurring_occurrence( array $row, int $post_id = 0 ) {
 		return array( $parent );
 	}
 
-	$byweekday = aa_events_repeat_byweekday( $row['repeat_byweekday'] ?? '' );
+	$byweekday                  = aa_events_repeat_byweekday( $row['repeat_byweekday'] ?? '' );
 	$parent['series_recurring'] = true;
 
 	$results      = array( $parent );
@@ -912,13 +912,14 @@ function aa_events_expand_recurring_occurrence( array $row, int $post_id = 0 ) {
 	$candidate_start_date = $parent['start_date'];
 	$step_index           = 0;
 
-	while ( count( $results ) < $cap ) {
+	$current_count = count( $results );
+	while ( $current_count < $cap ) {
 		++$step_index;
 		$candidate_start_date = aa_events_repeat_next_start_date( $parent['start_date'], $interval, $unit, $byweekday, $step_index );
 		if ( null === $candidate_start_date ) {
 			break;
 		}
-		$start_time = $parent['start_time'] ? $parent['start_time'] : '00:00:00';
+		$start_time      = $parent['start_time'] ? $parent['start_time'] : '00:00:00';
 		$candidate_start = new DateTimeImmutable( $candidate_start_date . ' ' . $start_time, wp_timezone() );
 		if ( $candidate_start_date > $safety_end ) {
 			break;
@@ -931,7 +932,8 @@ function aa_events_expand_recurring_occurrence( array $row, int $post_id = 0 ) {
 		if ( null === $child ) {
 			continue;
 		}
-		$results[] = $child;
+		$results[]     = $child;
+		$current_count = count( $results );
 
 		if ( 'after_count' === $end_type && count( $results ) >= $end_count ) {
 			break;
@@ -945,14 +947,16 @@ function aa_events_expand_recurring_occurrence( array $row, int $post_id = 0 ) {
  * Coerce a value to a positive integer or null.
  *
  * @param mixed $value   Raw value.
- * @param int   $default Default when value is empty.
+ * @param int   $defValue Default when value is empty.
  * @return int|null
  */
-function aa_events_repeat_positive_integer( $value, int $default = 1 ) {
-	if ( is_array( $value ) ) { return null; }
+function aa_events_repeat_positive_integer( $value, int $defValue = 1 ) {
+	if ( is_array( $value ) ) {
+		return null;
+	}
 	$string = aa_events_occurrence_string( $value );
 	if ( null === $string || '' === $string ) {
-		return $default > 0 ? $default : null;
+		return $defValue > 0 ? $defValue : null;
 	}
 	if ( ! preg_match( '/^[0-9]+$/', $string ) ) {
 		return null;
@@ -1085,9 +1089,9 @@ function aa_events_repeat_next_start_date( $start_date, int $interval, string $u
 		return aa_events_add_months( $base, $interval * $step_index )->format( 'Y-m-d' );
 	}
 	if ( 'year' === $unit ) {
-		$year          = (int) $base->format( 'Y' ) + ( $interval * $step_index );
-		$month         = (int) $base->format( 'n' );
-		$day           = (int) $base->format( 'j' );
+		$year           = (int) $base->format( 'Y' ) + ( $interval * $step_index );
+		$month          = (int) $base->format( 'n' );
+		$day            = (int) $base->format( 'j' );
 		$days_in_target = (int) ( new DateTimeImmutable( sprintf( '%04d-%02d-01', $year, $month ), wp_timezone() ) )->format( 't' );
 		$effective_day  = $day > $days_in_target ? $days_in_target : $day;
 		return sprintf( '%04d-%02d-%02d', $year, $month, $effective_day );
@@ -1098,15 +1102,15 @@ function aa_events_repeat_next_start_date( $start_date, int $interval, string $u
 /**
  * Build a normalized child occurrence from a parent and a candidate date.
  *
- * @param array  $parent         Parent normalized occurrence.
+ * @param array  $evtParent      Parent normalized occurrence.
  * @param string $candidate_date Y-m-d candidate date.
  * @param int    $post_id        Post ID.
  * @return array|null
  */
-function aa_events_repeat_build_child( array $parent, string $candidate_date, int $post_id ) {
-	$parent_end   = new DateTimeImmutable( $parent['end_date'] . ' 00:00:00', wp_timezone() );
-	$parent_start = new DateTimeImmutable( $parent['start_date'] . ' 00:00:00', wp_timezone() );
-	$diff         = $parent_start->diff( $parent_end );
+function aa_events_repeat_build_child( array $evtParent, string $candidate_date, int $post_id ) {
+	$parent_end    = new DateTimeImmutable( $evtParent['end_date'] . ' 00:00:00', wp_timezone() );
+	$parent_start  = new DateTimeImmutable( $evtParent['start_date'] . ' 00:00:00', wp_timezone() );
+	$diff          = $parent_start->diff( $parent_end );
 	$duration_days = (int) $diff->days;
 
 	$child_start_date = $candidate_date;
@@ -1117,14 +1121,14 @@ function aa_events_repeat_build_child( array $parent, string $candidate_date, in
 	$child = array(
 		'post_id'          => $post_id,
 		'start_date'       => $child_start_date,
-		'start_time'       => $parent['start_time'],
+		'start_time'       => $evtParent['start_time'],
 		'end_date'         => $child_end_date,
-		'end_time'         => $parent['end_time'],
-		'all_day'          => $parent['all_day'],
+		'end_time'         => $evtParent['end_time'],
+		'all_day'          => $evtParent['all_day'],
 		'source'           => 'event_dates_recurring',
 		'series_recurring' => true,
 		'start_inferred'   => false,
-		'end_inferred'     => $parent['end_inferred'],
+		'end_inferred'     => $evtParent['end_inferred'],
 	);
 
 	if ( ! aa_events_occurrence_range_is_valid( $child['start_date'], $child['start_time'], $child['end_date'], $child['end_time'], $child['all_day'] ) ) {
@@ -1309,6 +1313,7 @@ function aa_events_describe_recurrence( array $row ) {
 			'sat' => __( 'Saturday', 'aa-events' ),
 			'sun' => __( 'Sunday', 'aa-events' ),
 		);
+
 		$names = array();
 		foreach ( $byweekday as $token ) {
 			if ( isset( $day_labels[ $token ] ) ) {
@@ -1347,6 +1352,7 @@ function aa_events_describe_recurrence( array $row ) {
 			'sat' => __( 'Saturday', 'aa-events' ),
 			'sun' => __( 'Sunday', 'aa-events' ),
 		);
+
 		$names = array();
 		foreach ( $byweekday as $token ) {
 			if ( isset( $day_labels[ $token ] ) ) {
