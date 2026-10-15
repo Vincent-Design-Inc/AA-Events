@@ -3,7 +3,7 @@
  * Plugin Name: AA Events
  * Plugin URI:  https://github.com/Vincent-Design-Inc/aa-events
  * Description: An Events management plugin for WordPress, with accessible calendar (WCAG 2.2AA) and card grid views.
- * Version:     1.6.2
+ * Version:     1.6.5
  * Author:      Keith Solomon
  * Author URI:  https://vincentdesign.ca
  * License:     GPL-2.0+
@@ -49,7 +49,7 @@ register_deactivation_hook( __FILE__, 'deactivate_aa_events' );
  * Define Constants
  */
 define( 'AA_EVENTS_PLUGIN_FILE', __FILE__ );
-define( 'AA_EVENTS_VERSION', '1.6.2' );
+define( 'AA_EVENTS_VERSION', '1.6.5' );
 define( 'AA_EVENTS_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'AA_EVENTS_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
