@@ -1,5 +1,9 @@
 # Changelog
 
+## [v1.7.0] - 2026-10-14
+
+- Add support for plugin updates from Github
+
 ## [v1.6.5] - 2026-10-14
 
 - Improved weekly recurrence summaries to clearly describe selected weekdays while preserving familiar weekly phrasing.
