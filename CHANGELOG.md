@@ -1,5 +1,11 @@
 # Changelog
 
+## [v1.7.5] - 2026-10-26
+
+- Added per-occurrence calendar saving with Google Calendar, Outlook.com, Microsoft 365, and ICS downloads for Apple Calendar and other apps.
+- Added calendar choices to dates loaded with "Show next," with notices for estimated end times and saved copies that do not sync.
+- Restricted calendar downloads and occurrence pagination to public, published, non-password-protected events.
+
 ## [v1.7.0] - 2026-10-14
 
 - Add support for plugin updates from Github

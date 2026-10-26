@@ -8,6 +8,7 @@ An approachable, theme‑friendly events plugin for WordPress. It adds an `Event
 - Two taxonomies: `Event Types` (hierarchical) and `Event Tags` (non‑hierarchical).
 - Event details via ACF: occurrences, cost, location (online URL vs in‑person address).
 - Front‑end templates: archive list, single view, and a calendar page template.
+- Add-to-calendar choices on individual event dates: Google Calendar, Outlook.com, Microsoft 365, and an ICS download for Apple Calendar and other apps.
 - Theme overrides for templates and styles with simple folder conventions.
 - Sensible defaults: the admin date column shows and sorts by the earliest normalized occurrence.
 
@@ -85,6 +86,48 @@ Recurrence metadata is stored on the row itself. The plugin expands the row on d
   - `event_tag` (non‑hierarchical, slug `event-tag`)
 - Admin UX
   - Adds a “Date & Time” column on Events list, showing the earliest normalized occurrence and a count of additional occurrences; sorting uses the earliest occurrence.
+
+---
+
+## Saving Events to a Personal Calendar
+
+On a single-event page, expand **Add to calendar** beside the date you want to save, then choose:
+
+- **Google Calendar** — opens a prefilled calendar event.
+- **Outlook.com** — opens a prefilled event for a personal Microsoft account.
+- **Outlook / Microsoft 365** — opens a prefilled event for a work or school account.
+- **Apple Calendar / other apps (.ics)** — downloads a standard calendar file. Open it in a compatible calendar application; browser and device settings determine whether it opens directly or needs importing.
+
+Each choice saves **one occurrence**, not the entire recurring series. Dates revealed with **Show next** have the same choices. The saved entry includes the title, a short plain-text description, location or online URL, and a link back to the event.
+
+**Saved copies do not sync.** Later changes or cancellations on the website do not automatically update a visitor's saved copy. A reminder to check the event page is included in the controls and saved description.
+
+### Date and time handling
+
+- Timed entries use the WordPress site timezone and export exact instants in UTC. The visitor's calendar may display them in its own timezone.
+- All-day entries preserve their calendar dates, including the final date of a multi-day occurrence.
+- Dates without any times export as all-day entries, with a notice before saving.
+- When a timed occurrence has no end time, the export uses an **estimated one-hour duration**. If a later end date is explicitly set, it instead preserves that final date and estimates its end time as 11:59 PM in the site timezone. Both estimates are disclosed before saving and in the saved description.
+- An end-only occurrence starts at midnight in the site timezone in the exported copy, with a notice.
+- These export rules do not change the stored or displayed event schedule.
+
+Only public, published, non-password-protected events can be exported. Download links validate the selected occurrence against the current schedule; a changed or removed date returns an error rather than downloading a different occurrence.
+
+### Existing theme overrides
+
+The plugin does not overwrite theme templates. If your theme overrides the single-event template, opt in by rendering each occurrence with `aa_events_single_occurrence_markup()` instead of `aa_events_occurrence_time_markup()`:
+
+```php
+foreach ( aa_events_get_occurrences( get_the_ID() ) as $occurrence ) {
+    echo '<div class="aa-event-occurrence-item">';
+    echo aa_events_single_occurrence_markup( $occurrence ); // Returns escaped HTML.
+    echo '</div>';
+}
+```
+
+Use a block container, not a paragraph or span, because the helper includes a native `<details>` disclosure. The helper includes the date and recurring badge, so do not render those again. Existing **Show next** pagination automatically receives the same markup from the REST endpoint.
+
+If the theme also overrides the plugin stylesheet, copy the `.aa-event-occurrence-item`, `.aa-event-add-to-calendar`, and `.aa-event-calendar-notice` rules from the plugin stylesheet into the override. Native disclosure and download functionality work without JavaScript.
 
 ---
 

@@ -51,6 +51,7 @@ final class AA_Events {
 	 */
 	public function includes() {
 		include_once AA_EVENTS_PLUGIN_DIR . 'includes/occurrences.php';
+		include_once AA_EVENTS_PLUGIN_DIR . 'includes/calendar-export.php';
 		include_once AA_EVENTS_PLUGIN_DIR . 'includes/calendar-layout.php';
 		include_once AA_EVENTS_PLUGIN_DIR . 'includes/post-types.php';
 		include_once AA_EVENTS_PLUGIN_DIR . 'includes/acf-fields.php';
@@ -257,7 +258,7 @@ final class AA_Events {
 		$offset  = (int) $request->get_param( 'offset' );
 		$limit   = (int) $request->get_param( 'limit' );
 
-		if ( ! $post_id || 'event' !== get_post_type( $post_id ) ) {
+		if ( ! $post_id || ! aa_events_calendar_is_public( $post_id ) ) {
 			return new WP_REST_Response( array( 'error' => 'not_found' ), 404 );
 		}
 
@@ -280,7 +281,7 @@ final class AA_Events {
 		$items = array();
 		foreach ( $slice as $occurrence ) {
 			$items[] = array(
-				'markup' => aa_events_occurrence_time_markup( $occurrence ),
+				'markup' => aa_events_single_occurrence_markup( $occurrence ),
 			);
 		}
 

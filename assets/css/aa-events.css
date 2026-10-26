@@ -9,6 +9,45 @@
 	text-align: center;
 }
 
+.aa-event-occurrence-item {
+	margin-block: 0.75rem;
+}
+
+.aa-event-add-to-calendar {
+	margin-block: 0.25rem 0.75rem;
+	max-width: 36rem;
+}
+
+.aa-event-add-to-calendar summary {
+	cursor: pointer;
+	min-height: 24px;
+	padding-block: 0.25rem;
+	text-decoration: underline;
+	width: fit-content;
+}
+
+.aa-event-add-to-calendar summary:focus-visible,
+.aa-event-add-to-calendar a:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: 3px;
+}
+
+.aa-event-add-to-calendar ul {
+	margin-block: 0.5rem;
+	padding-inline-start: 1.5rem;
+}
+
+.aa-event-add-to-calendar a {
+	display: inline-block;
+	overflow-wrap: anywhere;
+	padding-block: 0.25rem;
+}
+
+.aa-event-calendar-notice {
+	font-size: 0.875em;
+	margin-block: 0.5rem;
+}
+
 .aa-events-wrap {
 	margin-left: auto;
 	margin-right: auto;

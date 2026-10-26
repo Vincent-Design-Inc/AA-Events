@@ -28,10 +28,8 @@
   }
 
   function appendItem(target, markup) {
-    var wrapper = document.createElement('span');
+    var wrapper = document.createElement('div');
     wrapper.className = 'aa-event-occurrence-item';
-    var breakNode = document.createElement('br');
-    target.appendChild(breakNode);
     wrapper.innerHTML = markup;
     target.appendChild(wrapper);
   }

@@ -48,12 +48,10 @@ get_header(); ?>
                                 ?>
                                 <div class="aa-event-occurrence-list" id="<?php echo esc_attr( $list_id ); ?>">
                                 <?php
-                                foreach ( $summary['occurrences'] as $index => $occurrence ) {
-									echo aa_events_occurrence_time_markup( $occurrence ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Helper returns escaped markup.
-									if ( aa_events_is_recurring_occurrence( $occurrence ) ) {
-										echo ' <span class="aa-event-recurring-badge">' . esc_html__( 'Recurring', 'aa-events' ) . '</span>';
-									}
-									echo ( $index < count( $summary['occurrences'] ) - 1 ) ? '<br />' : '';
+                                foreach ( $summary['occurrences'] as $occurrence ) {
+									echo '<div class="aa-event-occurrence-item">';
+									echo aa_events_single_occurrence_markup( $occurrence ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Helper returns escaped markup.
+									echo '</div>';
                                 }
                                 ?>
                                 </div>
