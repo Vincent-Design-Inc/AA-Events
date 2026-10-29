@@ -1,5 +1,9 @@
 # Changelog
 
+## [v1.7.6] - 2026-10-29
+
+- Fixed recurring events with selected weekdays ignoring the repeat interval, causing events set to every two weeks to appear weekly.
+
 ## [v1.7.5] - 2026-10-26
 
 - Added per-occurrence calendar saving with Google Calendar, Outlook.com, Microsoft 365, and ICS downloads for Apple Calendar and other apps.

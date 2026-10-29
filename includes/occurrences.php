@@ -1070,12 +1070,14 @@ function aa_events_repeat_next_start_date( $start_date, int $interval, string $u
 		}
 		$weekday_keys = array( 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun' );
 		$byweekday    = array_flip( $byweekday );
+		$week_start   = $base->modify( 'monday this week' );
 		$day          = $base->modify( '+1 day' );
 		$horizon      = $day->modify( '+' . ( 730 * 7 ) . ' days' );
 		$count        = 0;
 		while ( $day <= $horizon ) {
-			$token = $weekday_keys[ ( (int) $day->format( 'N' ) ) - 1 ];
-			if ( isset( $byweekday[ $token ] ) ) {
+			$token      = $weekday_keys[ ( (int) $day->format( 'N' ) ) - 1 ];
+			$week_index = intdiv( (int) $week_start->diff( $day )->days, 7 );
+			if ( 0 === $week_index % $interval && isset( $byweekday[ $token ] ) ) {
 				++$count;
 				if ( $count === $step_index ) {
 					return $day->format( 'Y-m-d' );
