@@ -4,7 +4,7 @@
  * Plugin URI:  https://github.com/Vincent-Design-Inc/aa-events
  * Update URI:  https://github.com/Vincent-Design-Inc/aa-events
  * Description: An Events management plugin for WordPress, with accessible calendar (WCAG 2.2AA) and card grid views.
- * Version:     1.7.6
+ * Version:     1.8.0
  * Author:      Keith Solomon
  * Author URI:  https://vincentdesign.ca
  * License:     GPL-2.0+
@@ -34,6 +34,17 @@ function activate_aa_events() {
 		aa_events_schedule_occurrence_index_backfill();
 	}
 
+	// Set default options if not already set.
+	if ( ! get_option( 'aa_events_show_recurring_badge' ) ) {
+		add_option( 'aa_events_show_recurring_badge', true );
+	}
+	if ( ! get_option( 'aa_events_date_format' ) ) {
+		add_option( 'aa_events_date_format', 'F j, Y' );
+	}
+	if ( ! get_option( 'aa_events_time_format' ) ) {
+		add_option( 'aa_events_time_format', 'g:i A' );
+	}
+
 	// Flush rewrite rules.
 	flush_rewrite_rules();
 }
@@ -53,7 +64,7 @@ register_deactivation_hook( __FILE__, 'deactivate_aa_events' );
  * Define Constants
  */
 define( 'AA_EVENTS_PLUGIN_FILE', __FILE__ );
-define( 'AA_EVENTS_VERSION', '1.7.6' );
+define( 'AA_EVENTS_VERSION', '1.8.0' );
 define( 'AA_EVENTS_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'AA_EVENTS_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 

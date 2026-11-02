@@ -1,5 +1,10 @@
 # Changelog
 
+## [v1.8.0] - 2026-11-02
+
+- Add admin page
+- Add settings for recurring event badge and date/time formatting
+
 ## [v1.7.6] - 2026-10-29
 
 - Fixed recurring events with selected weekdays ignoring the repeat interval, causing events set to every two weeks to appear weekly.

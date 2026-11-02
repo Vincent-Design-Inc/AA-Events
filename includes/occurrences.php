@@ -436,22 +436,25 @@ function aa_events_format_occurrence( array $occurrence ) {
 	$end      = aa_events_occurrence_end( $occurrence );
 	$same_day = $occurrence['start_date'] === $occurrence['end_date'];
 
+	$date_format = function_exists( 'aa_events_get_date_format' ) ? aa_events_get_date_format() : 'F j, Y';
+	$time_format = function_exists( 'aa_events_get_time_format' ) ? aa_events_get_time_format() : 'g:i A';
+
 	if ( ! empty( $occurrence['all_day'] ) ) {
 		if ( $same_day ) {
-			$label = wp_date( 'F j, Y', $start->getTimestamp(), $timezone );
+			$label = wp_date( $date_format, $start->getTimestamp(), $timezone );
 		} elseif ( $start->format( 'Y-m' ) === $end->format( 'Y-m' ) ) {
-			$label = wp_date( 'F j', $start->getTimestamp(), $timezone ) . '–' . wp_date( 'j, Y', $end->getTimestamp(), $timezone );
+			$label = wp_date( $date_format, $start->getTimestamp(), $timezone ) . '–' . wp_date( 'j, Y', $end->getTimestamp(), $timezone );
 		} elseif ( $start->format( 'Y' ) === $end->format( 'Y' ) ) {
-			$label = wp_date( 'F j', $start->getTimestamp(), $timezone ) . '–' . wp_date( 'F j, Y', $end->getTimestamp(), $timezone );
+			$label = wp_date( $date_format, $start->getTimestamp(), $timezone ) . '–' . wp_date( $date_format, $end->getTimestamp(), $timezone );
 		} else {
-			$label = wp_date( 'F j, Y', $start->getTimestamp(), $timezone ) . '–' . wp_date( 'F j, Y', $end->getTimestamp(), $timezone );
+			$label = wp_date( $date_format, $start->getTimestamp(), $timezone ) . '–' . wp_date( $date_format, $end->getTimestamp(), $timezone );
 		}
 		return $label . ' — ' . __( 'All day', 'aa-events' );
 	}
 
-	$start_date = wp_date( 'F j, Y', $start->getTimestamp(), $timezone );
-	$start_time = empty( $occurrence['start_time'] ) ? '' : wp_date( 'g:i A', $start->getTimestamp(), $timezone );
-	$end_time   = empty( $occurrence['end_time'] ) ? '' : wp_date( 'g:i A', $end->getTimestamp(), $timezone );
+	$start_date = wp_date( $date_format, $start->getTimestamp(), $timezone );
+	$start_time = empty( $occurrence['start_time'] ) ? '' : wp_date( $time_format, $start->getTimestamp(), $timezone );
+	$end_time   = empty( $occurrence['end_time'] ) ? '' : wp_date( $time_format, $end->getTimestamp(), $timezone );
 	if ( $same_day ) {
 		if ( $start_time && $end_time ) {
 			return $start_date . ', ' . $start_time . '–' . $end_time;
@@ -463,7 +466,7 @@ function aa_events_format_occurrence( array $occurrence ) {
 		return $start_date . ( $start_time ? ', ' . $start_time : '' );
 	}
 	$start_label = $start_date . ( $start_time ? ', ' . $start_time : '' );
-	$end_label   = wp_date( 'F j, Y', $end->getTimestamp(), $timezone ) . ( $end_time ? ', ' . $end_time : '' );
+	$end_label   = wp_date( $date_format, $end->getTimestamp(), $timezone ) . ( $end_time ? ', ' . $end_time : '' );
 	return $start_label . '–' . $end_label;
 }
 
@@ -493,8 +496,14 @@ function aa_events_occurrence_time_markup( array $occurrence ) {
 	}
 
 	$end_value   = $has_end_time ? $end->format( DATE_W3C ) : $occurrence['end_date'];
-	$start_label = wp_date( $has_start_time ? 'F j, Y, g:i A' : 'F j, Y', $start->getTimestamp(), wp_timezone() );
-	$end_label   = wp_date( $has_end_time ? 'F j, Y, g:i A' : 'F j, Y', $end->getTimestamp(), wp_timezone() );
+	$date_format = function_exists( 'aa_events_get_date_format' ) ? aa_events_get_date_format() : 'F j, Y';
+	$time_format = function_exists( 'aa_events_get_time_format' ) ? aa_events_get_time_format() : 'g:i A';
+
+	$start_format = $has_start_time ? $date_format . ', ' . $time_format : $date_format;
+	$end_format   = $has_end_time ? $date_format . ', ' . $time_format : $date_format;
+
+	$start_label = wp_date( $start_format, $start->getTimestamp(), wp_timezone() );
+	$end_label   = wp_date( $end_format, $end->getTimestamp(), wp_timezone() );
 
 	return '<span aria-hidden="true">' . $visible . '</span>'
 		. '<span class="screen-reader-text">' . esc_html( __( 'Starts:', 'aa-events' ) )

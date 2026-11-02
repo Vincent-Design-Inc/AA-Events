@@ -56,6 +56,7 @@ final class AA_Events {
 		include_once AA_EVENTS_PLUGIN_DIR . 'includes/post-types.php';
 		include_once AA_EVENTS_PLUGIN_DIR . 'includes/acf-fields.php';
 		include_once AA_EVENTS_PLUGIN_DIR . 'includes/template-loader.php';
+		include_once AA_EVENTS_PLUGIN_DIR . 'includes/admin-settings.php';
 	}
 
 	/**

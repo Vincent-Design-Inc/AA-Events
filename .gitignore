@@ -4,3 +4,4 @@ phpcs-results.txt
 tests/
 .playwright-mcp/
 .superpowers/
+.DS_Store

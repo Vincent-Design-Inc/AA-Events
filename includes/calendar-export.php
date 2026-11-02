@@ -167,7 +167,7 @@ function aa_events_calendar_links( array $data ) {
  */
 function aa_events_single_occurrence_markup( array $occurrence ) {
 	$markup = aa_events_occurrence_time_markup( $occurrence );
-	if ( aa_events_is_recurring_occurrence( $occurrence ) ) {
+	if ( aa_events_is_recurring_occurrence( $occurrence ) && get_option( 'aa_events_show_recurring_badge', true ) ) {
 		$markup .= ' <span class="aa-event-recurring-badge">' . esc_html( __( 'Recurring', 'aa-events' ) ) . '</span>';
 	}
 	if ( ! aa_events_calendar_is_public( $occurrence['post_id'] ) ) {
